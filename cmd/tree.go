@@ -53,7 +53,7 @@ var treeCmd = &cobra.Command{
 				qPath = "/" + qPath
 			}
 			qPath = strings.TrimRight(qPath, "/")
-			fmt.Printf("%s\n", qPath)
+			fmt.Printf("#%s\n", qPath)
 		}
 		if modName != "" {
 			if _, ok := ms.Modules[modName]; !ok {
