@@ -18,10 +18,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
 	"sort"
 
 	"github.com/openconfig/goyang/pkg/yang"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -50,7 +51,7 @@ var toJsonCmd = &cobra.Command{
 			fmt.Println("##### ", n)
 			b, err := json.MarshalIndent(yang.ToEntry(newModules[n]), "", " ")
 			if err != nil {
-				log.Printf("%v", err)
+				log.Errorf("%v", err)
 				continue
 			}
 			fmt.Println(string(b))

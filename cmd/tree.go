@@ -24,6 +24,7 @@ import (
 
 	"github.com/openconfig/goyang/pkg/indent"
 	"github.com/openconfig/goyang/pkg/yang"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -41,7 +42,7 @@ var treeCmd = &cobra.Command{
 		errs := ms.Process()
 		if len(errs) > 0 {
 			for _, err := range errs {
-				fmt.Fprintf(os.Stderr, "%v\n", err)
+				log.Errorf("%v\n", err)
 			}
 		}
 		newModules := make(map[string]*yang.Module)
@@ -49,6 +50,10 @@ var treeCmd = &cobra.Command{
 		modName := viper.GetString("tree-module")
 		qPath := viper.GetString("tree-path")
 		if qPath != "" {
+			if !strings.HasPrefix(qPath, "/") {
+				qPath = "/" + qPath
+			}
+			qPath = strings.TrimRight(qPath, "/")
 			fmt.Printf("%s\n", qPath)
 		}
 		if modName != "" {
