@@ -22,7 +22,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/openconfig/goyang/pkg/indent"
 	"github.com/openconfig/goyang/pkg/yang"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -96,70 +95,6 @@ func getTypeName(e *yang.Entry) string {
 	}
 
 	return fmt.Sprintf("%s:::%s", e.Type.Name, e.Type.Base.YangType.Kind.String())
-}
-
-func write2(w io.Writer, prefix string, e *yang.Entry) {
-	fmt.Printf("%s %s\n", prefix, strings.Repeat("#", 70))
-	fmt.Printf("%s Name         : '%s'\n", prefix, e.Name)
-	fmt.Printf("%s Kind         : '%s'\n", prefix, e.Kind.String())
-	fmt.Printf("%s Type         : '%s'\n", prefix, getTypeName(e))
-	fmt.Printf("%s Path         : '%s'\n", prefix, e.Path())
-	fmt.Printf("%s Namespace    : '%s'\n", prefix, e.Namespace().NName())
-	fmt.Printf("%s DefaultValue : '%s'\n", prefix, e.DefaultValue())
-	fmt.Printf("%s ReadOnly     : '%t'\n", prefix, e.ReadOnly())
-	if e.IsCase() {
-		fmt.Printf("%s isCase       : '%t'\n", prefix, e.IsCase())
-	}
-	if e.IsChoice() {
-		fmt.Printf("%s IsChoice     : '%t'\n", prefix, e.IsChoice())
-	}
-	if e.IsContainer() {
-		fmt.Printf("%s IsContainer  : '%t'\n", prefix, e.IsContainer())
-	}
-	fmt.Printf("%s IsDir        : '%t'\n", prefix, e.IsDir())
-	if e.IsLeaf() {
-		fmt.Printf("%s IsLeaf       : '%t'\n", prefix, e.IsLeaf())
-	}
-	if e.IsLeafList() {
-		fmt.Printf("%s IsLeafList   : '%t'\n", prefix, e.IsLeafList())
-	}
-	if e.IsList() {
-		fmt.Printf("%s IsList       : '%t'\n", prefix, e.IsList())
-	}
-	if e.RPC != nil {
-		fmt.Printf("%s RPC          : '%v'\n", prefix, e.RPC)
-	}
-	if len(e.Exts) > 0 {
-		fmt.Printf("%s Extensions: \n", prefix)
-		for _, ext := range e.Exts {
-			if n := ext.NName(); n != "" {
-				fmt.Printf("%s  %s %s;\n", prefix, ext.Kind(), n)
-			} else {
-				fmt.Printf("%s  %s;\n", prefix, ext.Kind())
-			}
-		}
-	}
-	switch {
-	// case e.Dir == nil && e.ListAttr != nil:
-	// 	fmt.Printf("%s []%s (%s)\n", prefix, e.Name, getTypeName(e))
-	// 	return
-	// case e.Dir == nil:
-	// 	fmt.Printf("%s %s (%s)\n", prefix, e.Name, getTypeName(e))
-	// 	return
-	// case e.ListAttr != nil:
-	// 	fmt.Printf("%s %s[%s] (%s)\n", prefix, e.Name, e.Key, getTypeName(e)) //}
-	// default:
-	// 	fmt.Printf("%s %s (%s)\n", prefix, e.Name, getTypeName(e)) //}
-	}
-	names := make([]string, 0)
-	for k := range e.Dir {
-		names = append(names, k)
-	}
-	sort.Strings(names)
-	prefix += "  "
-	for _, k := range names {
-		write2(indent.NewWriter(w, "  "), prefix, e.Dir[k])
-	}
 }
 
 func tree(w io.Writer, prefix string, e *yang.Entry, path string) {
