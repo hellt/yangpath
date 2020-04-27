@@ -32,7 +32,7 @@ var submodulesCmd = &cobra.Command{
 			return err
 		}
 		for _, m := range ms.SubModules {
-			fmt.Println(m.NName())
+			fmt.Println(m.Name)
 		}
 		return nil
 	},
