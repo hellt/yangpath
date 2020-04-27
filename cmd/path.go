@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -37,6 +38,10 @@ type path struct {
 	XPath        string
 	RestconfPath string
 }
+type templateIntput struct {
+	Paths []*path
+	Vars  map[string]string
+}
 
 var defTemplate = `
 <table class="table table-striped">
@@ -49,7 +54,7 @@ var defTemplate = `
   </tr>
 </thead>
 <tbody>
-{{range $i, $p  := .}}
+{{range $i, $p  := .Paths}}
 <tr>
 	<td>{{$i}}</td>
 	<td>{{$p.Module}}</td>
@@ -104,11 +109,32 @@ var pathCmd = &cobra.Command{
 			//fmt.Printf("%s | %s | %s\n", p.Module, p.RestconfPath, p.Type)
 		}
 		if viper.GetString("format") == "html" {
-			tmpl, err := template.New("default").Parse(defTemplate)
+			outTemplate := defTemplate
+			if viper.GetString("path-template") != "" {
+				data, err := ioutil.ReadFile(viper.GetString("path-template"))
+				if err != nil {
+					return err
+				}
+				outTemplate = string(data)
+			}
+
+			tmpl, err := template.New("output-template").Parse(outTemplate)
 			if err != nil {
 				return err
 			}
-			err = tmpl.Execute(os.Stdout, paths)
+			input := &templateIntput{
+				Paths: paths,
+				Vars:  make(map[string]string),
+			}
+			for _, v := range viper.GetStringSlice("path-template-vars") {
+				vk := strings.Split(v, ":::")
+				if len(vk) < 2 {
+					log.Printf("ignoring variable %s", v)
+					continue
+				}
+				input.Vars[vk[0]] = strings.Join(vk[1:], ":::")
+			}
+			err = tmpl.Execute(os.Stdout, input)
 			if err != nil {
 				return err
 			}
@@ -122,6 +148,10 @@ func init() {
 
 	pathCmd.Flags().StringP("type", "t", "xpath", "path types, xpath or restconf")
 	viper.BindPFlag("path-type", pathCmd.Flags().Lookup("type"))
+	pathCmd.Flags().StringP("template", "", "", "path to golang html template to use instead of the default one")
+	viper.BindPFlag("path-template", pathCmd.Flags().Lookup("template"))
+	pathCmd.Flags().StringSliceP("template-vars", "", []string{}, "extra template variables in case a custom template is used for html output")
+	viper.BindPFlag("path-template-vars", pathCmd.Flags().Lookup("template-vars"))
 }
 
 func addContainerToPath(module, prefix string, container *yang.Container, out chan *path) {
