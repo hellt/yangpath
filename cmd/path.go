@@ -16,7 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -80,33 +79,30 @@ var pathCmd = &cobra.Command{
 		if !snl(modName, names) && modName != "" {
 			return fmt.Errorf("unknown module: %s", modName)
 		}
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
 		paths := make([]*path, 0)
 		pc := make(chan *path, 0)
 		go func() {
-			for {
-				select {
-				case p := <-pc:
-					paths = append(paths, p)
-				case <-ctx.Done():
-					return
+			if modName != "" {
+				for _, c := range ms.Modules[modName].Container {
+					addContainerToPath(modName, "", c, pc)
+				}
+			} else {
+				for _, mn := range names {
+					for _, c := range ms.Modules[mn].Container {
+						addContainerToPath(mn, "", c, pc)
+					}
 				}
 			}
+			close(pc)
 		}()
-		for _, mn := range names {
-			for _, c := range ms.Modules[mn].Container {
-				addContainerToPath(mn, "", c, pc)
-			}
-		}
-		log.Printf("Got %d paths\n", len(paths))
-		for _, p := range paths {
+		for p := range pc {
 			p.XPath = gnmiPathToXPath(p.Path)
 			//p.RestconfPath = gnmiPathToRestconfPath(p.Path)
 			if viper.GetString("format") == "text" {
 				fmt.Printf("%s | %s | %s\n", p.Module, p.XPath, p.Type)
 			}
 			//fmt.Printf("%s | %s | %s\n", p.Module, p.RestconfPath, p.Type)
+			paths = append(paths, p)
 		}
 		if viper.GetString("format") == "html" {
 			outTemplate := defTemplate

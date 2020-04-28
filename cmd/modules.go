@@ -28,13 +28,17 @@ var modulesCmd = &cobra.Command{
 	Short: "list modules",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ms, err := readYangDirectory(viper.GetString("yang-dir"))
+		names, ms, err := loadAndSortModules(viper.GetString("yang-dir"))
 		if err != nil {
 			return err
 		}
-		for _, m := range ms.Modules {
-			fmt.Println(m.NName())
+		for _, n := range names {
+			fmt.Printf("%s:\n", n)
+			for _, r := range ms.Modules[n].Revision {
+				fmt.Printf("  revision: %s\n", r.NName())
+			}
 		}
+		// to expand on
 		return nil
 	},
 }

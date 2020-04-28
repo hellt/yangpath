@@ -18,7 +18,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -102,7 +101,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "debug")
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 
-	rootCmd.PersistentFlags().StringP("format", "f", "yaml", "output format")
+	rootCmd.PersistentFlags().StringP("format", "f", "text", "output format")
 	viper.BindPFlag("format", rootCmd.PersistentFlags().Lookup("format"))
 
 	rootCmd.PersistentFlags().StringP("module", "m", "", "module to export")
@@ -144,26 +143,19 @@ func initConfig() {
 	}
 }
 func readYangDirectory(dir string) (*yang.Modules, error) {
-	yFiles := make([]string, 0)
 	fChan := make(chan string, 0)
-	defer close(fChan)
-	go func() {
-		for {
-			select {
-			case fName := <-fChan:
-				yFiles = append(yFiles, fName)
-			}
-		}
-	}()
-	err := getYangfiles(dir, fChan)
-	if err != nil {
-		return nil, err
-	}
 	ms := yang.NewModules()
-	for _, f := range yFiles {
-		err = ms.Read(f)
+	go func() {
+		err := getYangfiles(dir, fChan)
 		if err != nil {
-			return nil, err
+			log.Println(err)
+		}
+		close(fChan)
+	}()
+	for f := range fChan {
+		err := ms.Read(f)
+		if err != nil {
+			log.Println(err)
 		}
 	}
 	return ms, nil
@@ -179,7 +171,7 @@ func loadAndSortModules(dir string) ([]string, *yang.Modules, error) {
 			log.Errorf("%v\n", err)
 		}
 	}
-	names := make([]string, 0, len(ms.Modules))
+	names := make([]string, 0)
 	for _, m := range ms.Modules {
 		if snl(m.Name, names) {
 			continue
@@ -189,7 +181,6 @@ func loadAndSortModules(dir string) ([]string, *yang.Modules, error) {
 	sort.Strings(names)
 	return names, ms, nil
 }
-
 func toYaml(w io.Writer, prefix string, e *yang.Entry, path string) {
 	if e == nil {
 		return
@@ -233,22 +224,19 @@ func toYaml(w io.Writer, prefix string, e *yang.Entry, path string) {
 		toYaml(w, prefix, e.Dir[k], path)
 	}
 }
-
 func getYangfiles(dir string, fChan chan string) error {
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return err
-	}
-	for _, f := range files {
-		if filepath.Ext(f.Name()) == ".yang" {
-			fChan <- filepath.Join(dir, f.Name())
-		}
-		if f.IsDir() {
-			err = getYangfiles(filepath.Join(dir, f.Name()), fChan)
+	err := filepath.Walk(dir,
+		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-		}
+			if filepath.Ext(info.Name()) == ".yang" {
+				fChan <- filepath.Join(dir, info.Name())
+			}
+			return nil
+		})
+	if err != nil {
+		log.Println(err)
 	}
 	return nil
 }

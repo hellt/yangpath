@@ -27,7 +27,7 @@ var submodulesCmd = &cobra.Command{
 	Use:   "submodules",
 	Short: "list submodules",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ms, err := readYangDirectory(viper.GetString("yang-dir"))
+		_, ms, err := loadAndSortModules(viper.GetString("yang-dir"))
 		if err != nil {
 			return err
 		}
