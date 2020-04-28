@@ -247,7 +247,7 @@ func gnmiPathToXPath(p *gnmi.Path) string {
 		}
 		pathElems = append(pathElems, elem)
 	}
-	return strings.Join(pathElems, "/")
+	return "/" + strings.Join(pathElems, "/")
 }
 func gnmiPathToRestconfPath(p *gnmi.Path) string {
 	if p == nil {
