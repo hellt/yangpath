@@ -1,3 +1,3 @@
-# ygdlv
+# yangform
 
-## ygdlv: Yang Delve, dig into Yang files
+YANG formatter
