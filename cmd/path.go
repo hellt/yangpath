@@ -42,9 +42,9 @@ var pathCmd = &cobra.Command{
 		}
 		e := yang.ToEntry(ms.Modules[modName])
 
-		paths := format.Paths(e, "", []string{})
+		paths := format.Paths(e, format.Path{}, []*format.Path{})
 		for _, path := range paths {
-			fmt.Println(path)
+			fmt.Printf("%s\t%s\t%s\n", path.Module, path.XPath, path.Type)
 		}
 		// paths := make([]*path, 0)
 		// pc := make(chan *path, 0)
