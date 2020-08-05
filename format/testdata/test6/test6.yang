@@ -1,0 +1,29 @@
+// this test YANG file has choice, case and enum types
+module test6 {
+
+    yang-version "1";
+    namespace "https://hellt/yangform/test6";
+
+    prefix "test6";
+
+     container food {
+       choice snack {
+           case sports-arena {
+               leaf pretzel {
+                   type empty;
+               }
+               leaf beer {
+                   type empty;
+               }
+           }
+           case late-night {
+               leaf chocolate {
+                   type enumeration {
+                       enum dark;
+                       enum milk;
+                   }
+               }
+           }
+       }
+    }
+}

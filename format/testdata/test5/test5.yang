@@ -1,0 +1,20 @@
+// this test YANG file has leafrefs
+// module name
+module test5 {
+
+    yang-version "1";
+    namespace "https://hellt/yangform/test5";
+
+    prefix "test5";
+
+    container c1 {
+        leaf leaf1 {
+          type string;
+        }
+        leaf leaf2 {
+          type leafref {
+            path "../leaf1";
+          }
+        }
+    }
+}

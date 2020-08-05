@@ -1,0 +1,27 @@
+// this test YANG file embeds a simple container->list->leaf structure
+// using the `use` and `grouping` yang statements
+// module name
+module test2 {
+
+    yang-version "1";
+    namespace "https://hellt/yangform/test2";
+
+    prefix "test2";
+
+grouping top{
+    container c1 {
+        list l1 {
+            // identify each individual by using the name as key
+            key "key1";
+
+          leaf key1 {
+            type string;
+          }
+          leaf leaf2 {
+            type string;
+          }
+        }
+    }
+}
+uses top;
+}

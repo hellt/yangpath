@@ -1,0 +1,32 @@
+// this test YANG file embeds a simple container->leaf structure
+// with an identities
+// module name
+module test4 {
+
+    yang-version "1";
+    namespace "https://hellt/yangform/test4";
+
+    prefix "test4";
+
+    identity IDENTITY1 {
+      description "To which group someone belongs to";
+    }
+
+    identity IDENTITY2 {
+      base IDENTITY1;
+      description "Identity2 based on Identity1";
+    }
+
+    container c1 {
+        leaf leaf1 {
+          type identityref {
+            base test4:IDENTITY2;
+          }
+        }
+        leaf leaf2 {
+          type identityref {
+            base IDENTITY1;
+          }
+        }
+    }
+}

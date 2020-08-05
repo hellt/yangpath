@@ -1,7 +1,6 @@
 package format
 
 import (
-	"log"
 	"reflect"
 	"testing"
 
@@ -20,6 +19,38 @@ func TestPaths(t *testing.T) {
 				{Module: "test1", Type: "string", XPath: "/c1/l1[key1=*]/key1"},
 				{Module: "test1", Type: "string", XPath: "/c1/l1[key1=*]/leaf2"},
 			}},
+		"test2": {
+			dirs: []string{"testdata/test2"}, module: "test2",
+			want: []*Path{
+				{Module: "test2", Type: "string", XPath: "/c1/l1[key1=*]/key1"},
+				{Module: "test2", Type: "string", XPath: "/c1/l1[key1=*]/leaf2"},
+			}},
+		"test3": {
+			dirs: []string{"testdata/test3"}, module: "test3",
+			want: []*Path{
+				{Module: "test3", Type: "string", XPath: "/c1/l1[key1=*][key2=*]/key1"},
+				{Module: "test3", Type: "age", XPath: "/c1/l1[key1=*][key2=*]/key2"},
+				{Module: "test3", Type: "int64", XPath: "/c1/l1[key1=*][key2=*]/leaf1"},
+			}},
+		"test4": {
+			dirs: []string{"testdata/test4"}, module: "test4",
+			want: []*Path{
+				{Module: "test4", Type: "identityref -> test4:IDENTITY2", XPath: "/c1/leaf1"},
+				{Module: "test4", Type: "identityref -> IDENTITY1", XPath: "/c1/leaf2"},
+			}},
+		"test5": {
+			dirs: []string{"testdata/test5"}, module: "test5",
+			want: []*Path{
+				{Module: "test5", Type: "string", XPath: "/c1/leaf1"},
+				{Module: "test5", Type: "leafref -> ../leaf1", XPath: "/c1/leaf2"},
+			}},
+		"test6": {
+			dirs: []string{"testdata/test6"}, module: "test6",
+			want: []*Path{
+				{Module: "test6", Type: "enumeration: [dark milk]", XPath: "/food/chocolate"},
+				{Module: "test6", Type: "empty", XPath: "/food/beer"},
+				{Module: "test6", Type: "empty", XPath: "/food/pretzel"},
+			}},
 	}
 
 	for name, tc := range tests {
@@ -31,11 +62,9 @@ func TestPaths(t *testing.T) {
 				}
 			}
 			e := yang.ToEntry(ms.Modules[tc.module])
-
+			// spew.Dump(e)
 			got := Paths(e, Path{}, []*Path{})
-			log.Printf("%#v\n", got)
 			if !reflect.DeepEqual(tc.want, got) {
-				// t.Fatalf("expected: %+v, got: %+v", *tc.want[0], *got)
 				for i, v := range tc.want {
 					if v.Module != got[i].Module {
 						t.Logf("Module wanted %s got %s\n", v.Module, got[i].Module)
