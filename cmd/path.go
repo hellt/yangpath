@@ -22,6 +22,7 @@ import (
 	"github.com/hellt/yangform/format"
 	"github.com/openconfig/gnmi/proto/gnmi"
 	"github.com/openconfig/goyang/pkg/yang"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -32,11 +33,13 @@ var pathCmd = &cobra.Command{
 	Short: "generate xpath or restconf style paths from yang files",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		names, ms, err := loadAndSortModules(viper.GetStringSlice("yang-dir"))
-		if err != nil {
-			return err
-		}
 		modName := viper.GetString("module")
+		names, ms, errs := format.LoadAndSortModules(viper.GetStringSlice("yang-dir"), modName)
+		if len(errs) > 0 {
+			for _, err := range errs {
+				log.Errorf("%v\n", err)
+			}
+		}
 		if !snl(modName, names) && modName != "" {
 			return fmt.Errorf("unknown module: %s", modName)
 		}

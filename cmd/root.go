@@ -18,10 +18,7 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"sort"
 
-	"github.com/openconfig/goyang/pkg/yang"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -94,40 +91,6 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
-}
-
-func loadAndSortModules(dirs []string) ([]string, *yang.Modules, error) {
-	// for each yang directory referenced with yang-dir flag
-	// perform a search for directories with YANG files inside
-	for _, path := range viper.GetStringSlice("yang-dir") {
-		expanded, err := yang.PathsWithModules(path)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			continue
-		}
-		yang.AddPath(expanded...)
-	}
-	ms := yang.NewModules()
-
-	if err := ms.Read(viper.GetString("module")); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
-	errs := ms.Process()
-	if len(errs) > 0 {
-		for _, err := range errs {
-			log.Errorf("%v\n", err)
-		}
-	}
-
-	names := make([]string, 0)
-	for _, m := range ms.Modules {
-		if snl(m.Name, names) {
-			continue
-		}
-		names = append(names, m.Name)
-	}
-	sort.Strings(names)
-	return names, ms, nil
 }
 
 // snl is a string-in-list-of-strings checking func
