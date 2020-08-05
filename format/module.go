@@ -6,7 +6,6 @@ import (
 	"sort"
 
 	"github.com/openconfig/goyang/pkg/yang"
-	"github.com/spf13/viper"
 )
 
 // LoadAndSortModules loads and sort YANG module m
@@ -15,7 +14,7 @@ import (
 func LoadAndSortModules(dirs []string, m string) ([]string, *yang.Modules, []error) {
 	// for each yang directory referenced with yang-dir flag
 	// perform a search for directories with YANG files inside
-	for _, path := range viper.GetStringSlice("yang-dir") {
+	for _, path := range dirs {
 		expanded, err := yang.PathsWithModules(path)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
