@@ -72,6 +72,9 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 		if e.Type.Kind == yang.Yleafref { //handling leafref
 			p.Type += fmt.Sprintf(" -> %v", e.Type.Path)
 		}
+		if e.Type.Kind == yang.Yenum { //handling enumeration types
+			p.Type += fmt.Sprintf(": %v", e.Type.Enum.Names())
+		}
 		// fmt.Printf("appending %v path to ps=%v\n", p, ps)
 		ps = append(ps, &p)
 	}
