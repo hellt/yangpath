@@ -17,51 +17,14 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"sort"
 	"strings"
 
-	"github.com/google/gnxi/utils/xpath"
+	"github.com/hellt/yangform/format"
 	"github.com/openconfig/gnmi/proto/gnmi"
 	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-
-type path struct {
-	Module       string
-	Path         *gnmi.Path
-	Type         string
-	XPath        string
-	RestconfPath string
-}
-type templateIntput struct {
-	Paths []*path
-	Vars  map[string]string
-}
-
-var defTemplate = `
-<table class="table table-striped">
-<thead>
-  <tr>
-	<th>#</th>
-	<th>Module</th>
-	<th>Path</th>
-	<th>Leaf Type</th>
-  </tr>
-</thead>
-<tbody>
-{{range $i, $p  := .Paths}}
-<tr>
-	<td>{{$i}}</td>
-	<td>{{$p.Module}}</td>
-	<td>{{$p.XPath}}</td>
-	<td>{{$p.Type}}</td>
-  </tr>
-{{end}}
-</tbody>
-</table>
-`
 
 // pathCmd represents the path command
 var pathCmd = &cobra.Command{
@@ -79,7 +42,7 @@ var pathCmd = &cobra.Command{
 		}
 		e := yang.ToEntry(ms.Modules[modName])
 
-		paths := walkEntry(e, "", []string{})
+		paths := format.Paths(e, "", []string{})
 		for _, path := range paths {
 			fmt.Println(path)
 		}
@@ -145,44 +108,6 @@ var pathCmd = &cobra.Command{
 	},
 }
 
-// walkEntry traverses the entry's directory Dir till the leaf node
-// aggregating the xpath path
-// returns a list of accumulated paths
-func walkEntry(e *yang.Entry, p string, ps []string) []string {
-	// fmt.Printf("walkEntry is called with p=%v and ps=%v\n", p, ps)
-	// fmt.Println("current entry name:", e.Name)
-
-	switch e.Node.(type) {
-	case *yang.Module: // a module has no parent
-	case *yang.Container:
-		p += fmt.Sprintf("/%s", e.Name)
-	case *yang.List:
-		keys := strings.Split(e.Key, " ")
-		var key string
-		for _, k := range keys {
-			key += fmt.Sprintf("[%s=*]", k)
-		}
-		p += fmt.Sprintf("/%s%s", e.Name, key)
-	case *yang.Leaf:
-		p += fmt.Sprintf("/%s", e.Name)
-		// fmt.Printf("appending %v path to ps=%v\n", p, ps)
-		ps = append(ps, p)
-	}
-
-	// fmt.Println("building path is", p)
-	// ne is a nested entries list
-	ne := make([]string, 0, len(e.Dir))
-
-	for k := range e.Dir {
-		ne = append(ne, k)
-	}
-	sort.Strings(ne)
-	for _, k := range ne {
-		ps = walkEntry(e.Dir[k], p, ps)
-	}
-	return ps
-}
-
 func init() {
 	rootCmd.AddCommand(pathCmd)
 
@@ -194,90 +119,6 @@ func init() {
 	viper.BindPFlag("path-template-vars", pathCmd.Flags().Lookup("template-vars"))
 }
 
-func addContainerToPath(module, prefix string, container *yang.Container, out chan *path) {
-	fmt.Println("in 1")
-	elementName := fmt.Sprintf("%s/%s", prefix, container.Name)
-	fmt.Println(elementName)
-	for _, c := range container.Container {
-		fmt.Println("in 2")
-		addContainerToPath(module, elementName, c, out)
-	}
-	for _, ls := range container.List {
-		fmt.Println("in 3")
-		addListToPath(module, elementName, ls, out)
-	}
-	for _, lf := range container.Leaf {
-		sp := fmt.Sprintf("%s/%s", elementName, lf.Name)
-		gnmiPath, err := xpath.ToGNMIPath(sp)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "path: %s could not be changed to gnmi: %v\n", sp, err)
-			continue
-		}
-		p := &path{
-			Module: module,
-			Path:   gnmiPath,
-			Type:   lf.Type.Name,
-		}
-		out <- p
-	}
-}
-func addListToPath(module, prefix string, ls *yang.List, out chan *path) {
-	keys := strings.Split(ls.Key.Name, " ")
-	keyElem := ls.Name
-	for _, k := range keys {
-		keyElem += fmt.Sprintf("[%s=*]", k)
-	}
-	elementName := fmt.Sprintf("%s/%s", prefix, keyElem)
-	for _, c := range ls.Container {
-		addContainerToPath(module, elementName, c, out)
-	}
-	for _, lls := range ls.List {
-		addListToPath(module, elementName, lls, out)
-	}
-	for _, ch := range ls.Choice {
-		for _, ca := range ch.Case {
-			addCaseToPath(module, elementName, ca, out)
-		}
-	}
-	for _, lf := range ls.Leaf {
-		if lf.Name != ls.Key.Name {
-			sp := fmt.Sprintf("%s/%s", elementName, lf.Name)
-			gnmiPath, err := xpath.ToGNMIPath(sp)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "path: %s could not be changed to gnmi: %v\n", sp, err)
-				continue
-			}
-			p := &path{
-				Module: module,
-				Path:   gnmiPath,
-				Type:   lf.Type.Name,
-			}
-			out <- p
-		}
-	}
-}
-func addCaseToPath(module, prefix string, ca *yang.Case, out chan *path) {
-	for _, cont := range ca.Container {
-		addContainerToPath(module, prefix, cont, out)
-	}
-	for _, ls := range ca.List {
-		addListToPath(module, prefix, ls, out)
-	}
-	for _, lf := range ca.Leaf {
-		sp := fmt.Sprintf("%s/%s", prefix, lf.Name)
-		gnmiPath, err := xpath.ToGNMIPath(sp)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "path: %s could not be changed to gnmi: %v\n", sp, err)
-			continue
-		}
-		p := &path{
-			Module: module,
-			Path:   gnmiPath,
-			Type:   lf.Type.Name,
-		}
-		out <- p
-	}
-}
 func gnmiPathToXPath(p *gnmi.Path) string {
 	if p == nil {
 		return ""

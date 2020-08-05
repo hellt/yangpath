@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/karimra/ygdlv/cmd"
+import "github.com/hellt/yangform/cmd"
 
 func main() {
 	cmd.Execute()
