@@ -17,11 +17,8 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"os"
-	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
 	log "github.com/sirupsen/logrus"
@@ -35,50 +32,8 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "ygdlv",
-	Short: "yang delve",
-
-	RunE: func(cmd *cobra.Command, args []string) error {
-		names, ms, err := loadAndSortModules(viper.GetString("yang-dir"))
-		if err != nil {
-			return err
-		}
-		wr := new(strings.Builder)
-		modName := viper.GetString("module")
-		if !snl(modName, names) && modName != "" {
-			return fmt.Errorf("unknown module: %s", modName)
-		}
-		qPath := viper.GetString("path")
-		if qPath != "" {
-			if !strings.HasPrefix(qPath, "/") {
-				qPath = "/" + qPath
-			}
-			qPath = strings.TrimRight(qPath, "/")
-			fmt.Fprintf(wr, "#%s\n", qPath)
-		}
-		if modName != "" {
-			toYaml(wr, "", yang.ToEntry(ms.Modules[modName]), qPath)
-		} else {
-			for _, n := range names {
-				toYaml(wr, "", yang.ToEntry(ms.Modules[n]), qPath)
-			}
-		}
-		outFile := viper.GetString("output")
-		if outFile != "" {
-			f, err := os.Create(outFile)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-			_, err = f.WriteString(wr.String())
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-		fmt.Println(wr.String())
-		return nil
-	},
+	Use:   "yangform",
+	Short: "yang formatter",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -95,7 +50,7 @@ func init() {
 	rootCmd.SilenceUsage = true
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.yangdelve.yaml)")
 
-	rootCmd.PersistentFlags().StringP("yang-dir", "y", "", "yang directory")
+	rootCmd.PersistentFlags().StringSliceP("yang-dir", "y", []string{""}, "directory(ies) with YANG modules")
 	viper.BindPFlag("yang-dir", rootCmd.PersistentFlags().Lookup("yang-dir"))
 
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "debug")
@@ -135,35 +90,27 @@ func initConfig() {
 		viper.SetConfigName(".yangdelve")
 	}
 
-	//	viper.AutomaticEnv() // read in environment variables that match
-
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 }
-func readYangDirectory(dir string) (*yang.Modules, error) {
-	fChan := make(chan string, 0)
-	ms := yang.NewModules()
-	go func() {
-		err := getYangfiles(dir, fChan)
+
+func loadAndSortModules(dirs []string) ([]string, *yang.Modules, error) {
+	// for each yang directory referenced with yang-dir flag
+	// perform a search for directories with YANG files inside
+	for _, path := range viper.GetStringSlice("yang-dir") {
+		expanded, err := yang.PathsWithModules(path)
 		if err != nil {
-			log.Println(err)
+			fmt.Fprintln(os.Stderr, err)
+			continue
 		}
-		close(fChan)
-	}()
-	for f := range fChan {
-		err := ms.Read(f)
-		if err != nil {
-			log.Println(err)
-		}
+		yang.AddPath(expanded...)
 	}
-	return ms, nil
-}
-func loadAndSortModules(dir string) ([]string, *yang.Modules, error) {
-	ms, err := readYangDirectory(dir)
-	if err != nil {
-		return nil, nil, err
+	ms := yang.NewModules()
+
+	if err := ms.Read(viper.GetString("module")); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 	}
 	errs := ms.Process()
 	if len(errs) > 0 {
@@ -171,6 +118,7 @@ func loadAndSortModules(dir string) ([]string, *yang.Modules, error) {
 			log.Errorf("%v\n", err)
 		}
 	}
+
 	names := make([]string, 0)
 	for _, m := range ms.Modules {
 		if snl(m.Name, names) {
@@ -181,62 +129,13 @@ func loadAndSortModules(dir string) ([]string, *yang.Modules, error) {
 	sort.Strings(names)
 	return names, ms, nil
 }
-func toYaml(w io.Writer, prefix string, e *yang.Entry, path string) {
-	if e == nil {
-		return
-	}
-	indent := 0
-	meta := viper.GetBool("meta")
-	keys := strings.Split(e.Key, " ")
-	if path == "" || (path != "" && strings.HasPrefix(e.Path(), path+"/")) || (path == e.Path()) {
-		fmt.Fprintf(w, "%s%s:", prefix, e.Name)
-		if meta {
-			fmt.Fprintf(w, " # (%s)", access(e))
-			// getTypeMeta(w, prefix, e.Type)
-		}
-		fmt.Fprint(w, "\n")
-		switch {
-		case e.IsList():
-			for i, k := range keys {
-				if i == 0 {
-					fmt.Fprintf(w, "%s  - %s:", prefix, k)
-					indent += 2
-				} else {
-					fmt.Fprintf(w, "%s%s:", prefix, k)
-				}
-				if meta {
-					fmt.Fprintf(w, " # (%s)", access(e))
-				}
-				fmt.Fprint(w, "\n")
-			}
-		}
-		indent += 2
-	}
-	names := make([]string, 0)
-	for n := range e.Dir {
-		if !snl(n, keys) {
-			names = append(names, n)
+
+// snl is a string-in-list-of-strings checking func
+func snl(s string, l []string) bool {
+	for _, sl := range l {
+		if s == sl {
+			return true
 		}
 	}
-	prefix += strings.Repeat(" ", indent)
-	sort.Strings(names)
-	for _, k := range names {
-		toYaml(w, prefix, e.Dir[k], path)
-	}
-}
-func getYangfiles(dir string, fChan chan string) error {
-	err := filepath.Walk(dir,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if filepath.Ext(info.Name()) == ".yang" {
-				fChan <- filepath.Join(dir, info.Name())
-			}
-			return nil
-		})
-	if err != nil {
-		log.Println(err)
-	}
-	return nil
+	return false
 }

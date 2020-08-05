@@ -17,10 +17,8 @@ package cmd
 
 import (
 	"fmt"
-	"html/template"
-	"io/ioutil"
-	"log"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/google/gnxi/utils/xpath"
@@ -71,7 +69,7 @@ var pathCmd = &cobra.Command{
 	Short: "generate xpath or restconf style paths from yang files",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		names, ms, err := loadAndSortModules(viper.GetString("yang-dir"))
+		names, ms, err := loadAndSortModules(viper.GetStringSlice("yang-dir"))
 		if err != nil {
 			return err
 		}
@@ -79,64 +77,110 @@ var pathCmd = &cobra.Command{
 		if !snl(modName, names) && modName != "" {
 			return fmt.Errorf("unknown module: %s", modName)
 		}
-		paths := make([]*path, 0)
-		pc := make(chan *path, 0)
-		go func() {
-			if modName != "" {
-				for _, c := range ms.Modules[modName].Container {
-					addContainerToPath(modName, "", c, pc)
-				}
-			} else {
-				for _, mn := range names {
-					for _, c := range ms.Modules[mn].Container {
-						addContainerToPath(mn, "", c, pc)
-					}
-				}
-			}
-			close(pc)
-		}()
-		for p := range pc {
-			p.XPath = gnmiPathToXPath(p.Path)
-			//p.RestconfPath = gnmiPathToRestconfPath(p.Path)
-			if viper.GetString("format") == "text" {
-				fmt.Printf("%s | %s | %s\n", p.Module, p.XPath, p.Type)
-			}
-			//fmt.Printf("%s | %s | %s\n", p.Module, p.RestconfPath, p.Type)
-			paths = append(paths, p)
-		}
-		if viper.GetString("format") == "html" {
-			outTemplate := defTemplate
-			if viper.GetString("path-template") != "" {
-				data, err := ioutil.ReadFile(viper.GetString("path-template"))
-				if err != nil {
-					return err
-				}
-				outTemplate = string(data)
-			}
+		e := yang.ToEntry(ms.Modules[modName])
 
-			tmpl, err := template.New("output-template").Parse(outTemplate)
-			if err != nil {
-				return err
-			}
-			input := &templateIntput{
-				Paths: paths,
-				Vars:  make(map[string]string),
-			}
-			for _, v := range viper.GetStringSlice("path-template-vars") {
-				vk := strings.Split(v, ":::")
-				if len(vk) < 2 {
-					log.Printf("ignoring variable %s", v)
-					continue
-				}
-				input.Vars[vk[0]] = strings.Join(vk[1:], ":::")
-			}
-			err = tmpl.Execute(os.Stdout, input)
-			if err != nil {
-				return err
-			}
+		paths := walkEntry(e, "", []string{})
+		for _, path := range paths {
+			fmt.Println(path)
 		}
+		// paths := make([]*path, 0)
+		// pc := make(chan *path, 0)
+		// go func() {
+		// 	if modName != "" {
+		// 		// fmt.Printf("%+v\n", ms.Modules[modName].Container)
+		// 		spew.Dump(yang.ToEntry(ms.Modules[modName]))
+		// 		for _, c := range ms.Modules[modName].Container {
+		// 			addContainerToPath(modName, "", c, pc)
+		// 		}
+		// 	} else {
+		// 		for _, mn := range names {
+		// 			for _, c := range ms.Modules[mn].Container {
+		// 				addContainerToPath(mn, "", c, pc)
+		// 			}
+		// 		}
+		// 	}
+		// 	close(pc)
+		// }()
+		// for p := range pc {
+		// 	p.XPath = gnmiPathToXPath(p.Path)
+		// 	//p.RestconfPath = gnmiPathToRestconfPath(p.Path)
+		// 	if viper.GetString("format") == "text" {
+		// 		fmt.Printf("%s | %s | %s\n", p.Module, p.XPath, p.Type)
+		// 	}
+		// 	//fmt.Printf("%s | %s | %s\n", p.Module, p.RestconfPath, p.Type)
+		// 	paths = append(paths, p)
+		// }
+		// if viper.GetString("format") == "html" {
+		// 	outTemplate := defTemplate
+		// 	if viper.GetString("path-template") != "" {
+		// 		data, err := ioutil.ReadFile(viper.GetString("path-template"))
+		// 		if err != nil {
+		// 			return err
+		// 		}
+		// 		outTemplate = string(data)
+		// 	}
+
+		// 	tmpl, err := template.New("output-template").Parse(outTemplate)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// 	input := &templateIntput{
+		// 		Paths: paths,
+		// 		Vars:  make(map[string]string),
+		// 	}
+		// 	for _, v := range viper.GetStringSlice("path-template-vars") {
+		// 		vk := strings.Split(v, ":::")
+		// 		if len(vk) < 2 {
+		// 			log.Printf("ignoring variable %s", v)
+		// 			continue
+		// 		}
+		// 		input.Vars[vk[0]] = strings.Join(vk[1:], ":::")
+		// 	}
+		// 	err = tmpl.Execute(os.Stdout, input)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// }
 		return nil
 	},
+}
+
+// walkEntry traverses the entry's directory Dir till the leaf node
+// aggregating the xpath path
+// returns a list of accumulated paths
+func walkEntry(e *yang.Entry, p string, ps []string) []string {
+	// fmt.Printf("walkEntry is called with p=%v and ps=%v\n", p, ps)
+	// fmt.Println("current entry name:", e.Name)
+
+	switch e.Node.(type) {
+	case *yang.Module: // a module has no parent
+	case *yang.Container:
+		p += fmt.Sprintf("/%s", e.Name)
+	case *yang.List:
+		keys := strings.Split(e.Key, " ")
+		var key string
+		for _, k := range keys {
+			key += fmt.Sprintf("[%s=*]", k)
+		}
+		p += fmt.Sprintf("/%s%s", e.Name, key)
+	case *yang.Leaf:
+		p += fmt.Sprintf("/%s", e.Name)
+		// fmt.Printf("appending %v path to ps=%v\n", p, ps)
+		ps = append(ps, p)
+	}
+
+	// fmt.Println("building path is", p)
+	// ne is a nested entries list
+	ne := make([]string, 0, len(e.Dir))
+
+	for k := range e.Dir {
+		ne = append(ne, k)
+	}
+	sort.Strings(ne)
+	for _, k := range ne {
+		ps = walkEntry(e.Dir[k], p, ps)
+	}
+	return ps
 }
 
 func init() {
@@ -151,11 +195,15 @@ func init() {
 }
 
 func addContainerToPath(module, prefix string, container *yang.Container, out chan *path) {
+	fmt.Println("in 1")
 	elementName := fmt.Sprintf("%s/%s", prefix, container.Name)
+	fmt.Println(elementName)
 	for _, c := range container.Container {
+		fmt.Println("in 2")
 		addContainerToPath(module, elementName, c, out)
 	}
 	for _, ls := range container.List {
+		fmt.Println("in 3")
 		addListToPath(module, elementName, ls, out)
 	}
 	for _, lf := range container.Leaf {
