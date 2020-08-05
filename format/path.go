@@ -58,11 +58,11 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 		p.XPath += fmt.Sprintf("/%s", e.Name)
 	case *yang.List:
 		keys := strings.Split(e.Key, " ")
-		var key string
+		var keyElem string
 		for _, k := range keys {
-			key += fmt.Sprintf("[%s=*]", k)
+			keyElem += fmt.Sprintf("[%s=*]", k)
 		}
-		p.XPath += fmt.Sprintf("/%s%s", e.Name, key)
+		p.XPath += fmt.Sprintf("/%s%s", e.Name, keyElem)
 	case *yang.Leaf:
 		p.XPath += fmt.Sprintf("/%s", e.Name)
 		p.Type = e.Type.Name
