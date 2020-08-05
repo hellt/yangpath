@@ -69,6 +69,9 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 		if e.Type.IdentityBase != nil { // if the type is identityref
 			p.Type += fmt.Sprintf(" -> %v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
 		}
+		if e.Type.Kind == yang.Yleafref { //handling leafref
+			p.Type += fmt.Sprintf(" -> %v", e.Type.Path)
+		}
 		// fmt.Printf("appending %v path to ps=%v\n", p, ps)
 		ps = append(ps, &p)
 	}
