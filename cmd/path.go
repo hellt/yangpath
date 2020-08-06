@@ -47,7 +47,7 @@ var pathCmd = &cobra.Command{
 
 		paths := format.Paths(e, format.Path{}, []*format.Path{})
 		for _, path := range paths {
-			fmt.Printf("%s    %s    %s\n", path.Module, path.XPath, path.Type)
+			fmt.Printf("%s    %s    %s\n", path.Module, path.XPath, path.Type.Name)
 		}
 		// paths := make([]*path, 0)
 		// pc := make(chan *path, 0)

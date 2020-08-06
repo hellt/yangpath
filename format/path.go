@@ -11,10 +11,8 @@ import (
 // Path represents a path in the YANG tree
 type Path struct {
 	Module string
-	// Path         *gnmi.Path
-	Type         string
-	XPath        string
-	RestconfPath string
+	Type   *yang.Type
+	XPath  string
 }
 type templateIntput struct {
 	Paths []*Path
@@ -65,16 +63,16 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 		p.XPath += fmt.Sprintf("/%s%s", e.Name, keyElem)
 	case *yang.Leaf:
 		p.XPath += fmt.Sprintf("/%s", e.Name)
-		p.Type = e.Type.Name
-		if e.Type.IdentityBase != nil { // if the type is identityref
-			p.Type += fmt.Sprintf(" -> %v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
-		}
-		if e.Type.Kind == yang.Yleafref { //handling leafref
-			p.Type += fmt.Sprintf(" -> %v", e.Type.Path)
-		}
-		if e.Type.Kind == yang.Yenum { //handling enumeration types
-			p.Type += fmt.Sprintf(": %v", e.Type.Enum.Names())
-		}
+		p.Type = e.Node.(*yang.Leaf).Type
+		// if e.Type.IdentityBase != nil { // if the type is identityref
+		// 	p.Type += fmt.Sprintf(" -> %v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
+		// }
+		// if e.Type.Kind == yang.Yleafref { //handling leafref
+		// 	p.Type += fmt.Sprintf(" -> %v", e.Type.Path)
+		// }
+		// if e.Type.Kind == yang.Yenum { //handling enumeration types
+		// 	p.Type += fmt.Sprintf(": %v", e.Type.Enum.Names())
+		// }
 		// fmt.Printf("appending %v path to ps=%v\n", p, ps)
 		ps = append(ps, &p)
 	}
