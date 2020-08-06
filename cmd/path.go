@@ -46,13 +46,22 @@ var pathCmd = &cobra.Command{
 		e := yang.ToEntry(ms.Modules[modName])
 
 		paths := format.Paths(e, format.Path{}, []*format.Path{})
-		if viper.GetString("format") == "text" {
+		if viper.GetString("path-format") == "text" {
 			for _, path := range paths {
-				fmt.Printf("%s    %s    %s\n", path.Module, path.XPath, path.Type.Name)
+				var ps string // path string to print
+
+				if viper.GetString("path-with-module") == "yes" {
+					ps += fmt.Sprintf("%s    ", path.Module)
+				}
+				ps += fmt.Sprintf("%s", path.XPath)
+				if viper.GetString("path-with-types") == "yes" {
+					ps += fmt.Sprintf("    %s", path.Type.Name)
+				}
+				fmt.Println(ps)
 			}
 		}
 
-		if viper.GetString("format") == "html" {
+		if viper.GetString("path-format") == "html" {
 			t := viper.GetString("path-template") // path to the template file
 			vars := viper.GetStringSlice("path-template-vars")
 			format.Template(t, paths, vars)
@@ -65,10 +74,21 @@ var pathCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(pathCmd)
 
+	pathCmd.Flags().StringP("format", "f", "text", "paths output format. One of [text, html]")
+	viper.BindPFlag("path-format", pathCmd.Flags().Lookup("format"))
+
 	pathCmd.Flags().StringP("type", "t", "xpath", "path types, xpath or restconf")
 	viper.BindPFlag("path-type", pathCmd.Flags().Lookup("type"))
+
+	pathCmd.Flags().StringP("with-module", "", "no", "print module name")
+	viper.BindPFlag("path-with-module", pathCmd.Flags().Lookup("with-module"))
+
+	pathCmd.Flags().StringP("with-types", "", "yes", "display path type information")
+	viper.BindPFlag("path-with-types", pathCmd.Flags().Lookup("with-types"))
+
 	pathCmd.Flags().StringP("template", "", "", "path to HTML template to use instead of the default one")
 	viper.BindPFlag("path-template", pathCmd.Flags().Lookup("template"))
+
 	pathCmd.Flags().StringSliceP("template-vars", "", []string{}, "extra template variables in case a custom template is used. Key value pairs separated with ::: delimiter")
 	viper.BindPFlag("path-template-vars", pathCmd.Flags().Lookup("template-vars"))
 }

@@ -53,9 +53,6 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "debug")
 	viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 
-	rootCmd.PersistentFlags().StringP("format", "f", "text", "output format")
-	viper.BindPFlag("format", rootCmd.PersistentFlags().Lookup("format"))
-
 	rootCmd.PersistentFlags().StringP("module", "m", "", "module to export")
 	viper.BindPFlag("module", rootCmd.PersistentFlags().Lookup("module"))
 
