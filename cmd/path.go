@@ -52,8 +52,11 @@ var pathCmd = &cobra.Command{
 					ps += fmt.Sprintf("%s    ", path.Module)
 				}
 				ps += fmt.Sprintf("%s", path.XPath)
-				if viper.GetString("path-with-types") == "yes" {
+				switch viper.GetString("path-with-types") {
+				case "yes":
 					ps += fmt.Sprintf("    %s", path.Type.Name)
+				case "expanded":
+					ps += fmt.Sprintf("    %s", path.SType)
 				}
 				fmt.Println(ps)
 			}
@@ -62,7 +65,9 @@ var pathCmd = &cobra.Command{
 		if viper.GetString("path-format") == "html" {
 			t := viper.GetString("path-template") // path to the template file
 			vars := viper.GetStringSlice("path-template-vars")
-			format.Template(t, paths, vars)
+			if err := format.Template(t, paths, vars); err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		return nil

@@ -18,7 +18,12 @@ type Path struct {
 	Module string
 	Type   *yang.Type
 	XPath  string
+	SType  string // string representation of the Type
 }
+
+// templateInput holds HTML template variables
+// Paths is a list of Path data
+// Vars is a user-defined map of k/v pairs used in the template
 type templateIntput struct {
 	Paths []*Path
 	Vars  map[string]string
@@ -70,15 +75,16 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 	case *yang.Leaf:
 		p.XPath += fmt.Sprintf("/%s", e.Name)
 		p.Type = e.Node.(*yang.Leaf).Type
-		// if e.Type.IdentityBase != nil { // if the type is identityref
-		// 	p.Type += fmt.Sprintf(" -> %v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
-		// }
-		// if e.Type.Kind == yang.Yleafref { //handling leafref
-		// 	p.Type += fmt.Sprintf(" -> %v", e.Type.Path)
-		// }
-		// if e.Type.Kind == yang.Yenum { //handling enumeration types
-		// 	p.Type += fmt.Sprintf(": %v", e.Type.Enum.Names())
-		// }
+		p.SType = e.Type.Name
+		if e.Type.IdentityBase != nil { // if the type is identityref
+			p.SType += fmt.Sprintf("->%v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
+		}
+		if e.Type.Kind == yang.Yleafref { //handling leafref
+			p.SType += fmt.Sprintf("->%v", e.Type.Path)
+		}
+		if e.Type.Kind == yang.Yenum { //handling enumeration types
+			p.SType += fmt.Sprintf(":%v", e.Type.Enum.Names())
+		}
 		// fmt.Printf("appending %v path to ps=%v\n", p, ps)
 		ps = append(ps, &p)
 	}
