@@ -75,7 +75,7 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 	case *yang.Leaf:
 		p.XPath += fmt.Sprintf("/%s", e.Name)
 		p.Type = e.Node.(*yang.Leaf).Type
-		p.SType = e.Type.Name
+		p.SType = e.Node.(*yang.Leaf).Type.Name
 		if e.Type.IdentityBase != nil { // if the type is identityref
 			p.SType += fmt.Sprintf("->%v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
 		}

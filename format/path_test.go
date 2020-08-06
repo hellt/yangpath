@@ -90,12 +90,17 @@ func TestPaths(t *testing.T) {
 					XPath:    "/c1/leaf2"},
 			}},
 		"test6": {
-			dirs: []string{"testdata/test6"}, module: "test6",
+			dirs: []string{"testdata/test6", "testdata/test3"}, module: "test6",
 			want: []want{
 				{
 					Module:   "test6",
 					TypeName: "enumeration",
 					XPath:    "/food/chocolate",
+				},
+				{
+					Module:   "test6",
+					TypeName: "test3:age",
+					XPath:    "/food/testage",
 				},
 				{
 					Module:   "test6",
