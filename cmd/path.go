@@ -17,10 +17,8 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/hellt/yangform/format"
-	"github.com/openconfig/gnmi/proto/gnmi"
 	"github.com/openconfig/goyang/pkg/yang"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -91,43 +89,4 @@ func init() {
 
 	pathCmd.Flags().StringSliceP("template-vars", "", []string{}, "extra template variables in case a custom template is used. Key value pairs separated with ::: delimiter")
 	viper.BindPFlag("path-template-vars", pathCmd.Flags().Lookup("template-vars"))
-}
-
-func gnmiPathToXPath(p *gnmi.Path) string {
-	if p == nil {
-		return ""
-	}
-	pathElems := make([]string, 0, len(p.GetElem()))
-	for _, pe := range p.GetElem() {
-		elem := ""
-		if pe.GetName() != "" {
-			elem += pe.GetName()
-		}
-		if pe.GetKey() != nil {
-			for k, v := range pe.GetKey() {
-				elem += fmt.Sprintf("[%s=%s]", k, v)
-			}
-		}
-		pathElems = append(pathElems, elem)
-	}
-	return "/" + strings.Join(pathElems, "/")
-}
-func gnmiPathToRestconfPath(p *gnmi.Path) string {
-	if p == nil {
-		return ""
-	}
-	pathElems := make([]string, 0, len(p.GetElem()))
-	for _, pe := range p.GetElem() {
-		elem := ""
-		if pe.GetName() != "" {
-			elem += pe.GetName()
-		}
-		if pe.GetKey() != nil {
-			for k, v := range pe.GetKey() {
-				elem += fmt.Sprintf("%s=%s", k, v)
-			}
-		}
-		pathElems = append(pathElems, elem)
-	}
-	return strings.Join(pathElems, "/")
 }
