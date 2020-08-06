@@ -46,67 +46,18 @@ var pathCmd = &cobra.Command{
 		e := yang.ToEntry(ms.Modules[modName])
 
 		paths := format.Paths(e, format.Path{}, []*format.Path{})
-		for _, path := range paths {
-			fmt.Printf("%s    %s    %s\n", path.Module, path.XPath, path.Type.Name)
+		if viper.GetString("format") == "text" {
+			for _, path := range paths {
+				fmt.Printf("%s    %s    %s\n", path.Module, path.XPath, path.Type.Name)
+			}
 		}
-		// paths := make([]*path, 0)
-		// pc := make(chan *path, 0)
-		// go func() {
-		// 	if modName != "" {
-		// 		// fmt.Printf("%+v\n", ms.Modules[modName].Container)
-		// 		spew.Dump(yang.ToEntry(ms.Modules[modName]))
-		// 		for _, c := range ms.Modules[modName].Container {
-		// 			addContainerToPath(modName, "", c, pc)
-		// 		}
-		// 	} else {
-		// 		for _, mn := range names {
-		// 			for _, c := range ms.Modules[mn].Container {
-		// 				addContainerToPath(mn, "", c, pc)
-		// 			}
-		// 		}
-		// 	}
-		// 	close(pc)
-		// }()
-		// for p := range pc {
-		// 	p.XPath = gnmiPathToXPath(p.Path)
-		// 	//p.RestconfPath = gnmiPathToRestconfPath(p.Path)
-		// 	if viper.GetString("format") == "text" {
-		// 		fmt.Printf("%s | %s | %s\n", p.Module, p.XPath, p.Type)
-		// 	}
-		// 	//fmt.Printf("%s | %s | %s\n", p.Module, p.RestconfPath, p.Type)
-		// 	paths = append(paths, p)
-		// }
-		// if viper.GetString("format") == "html" {
-		// 	outTemplate := defTemplate
-		// 	if viper.GetString("path-template") != "" {
-		// 		data, err := ioutil.ReadFile(viper.GetString("path-template"))
-		// 		if err != nil {
-		// 			return err
-		// 		}
-		// 		outTemplate = string(data)
-		// 	}
 
-		// 	tmpl, err := template.New("output-template").Parse(outTemplate)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	input := &templateIntput{
-		// 		Paths: paths,
-		// 		Vars:  make(map[string]string),
-		// 	}
-		// 	for _, v := range viper.GetStringSlice("path-template-vars") {
-		// 		vk := strings.Split(v, ":::")
-		// 		if len(vk) < 2 {
-		// 			log.Printf("ignoring variable %s", v)
-		// 			continue
-		// 		}
-		// 		input.Vars[vk[0]] = strings.Join(vk[1:], ":::")
-		// 	}
-		// 	err = tmpl.Execute(os.Stdout, input)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// }
+		if viper.GetString("format") == "html" {
+			t := viper.GetString("path-template") // path to the template file
+			vars := viper.GetStringSlice("path-template-vars")
+			format.Template(t, paths, vars)
+		}
+
 		return nil
 	},
 }
@@ -116,9 +67,9 @@ func init() {
 
 	pathCmd.Flags().StringP("type", "t", "xpath", "path types, xpath or restconf")
 	viper.BindPFlag("path-type", pathCmd.Flags().Lookup("type"))
-	pathCmd.Flags().StringP("template", "", "", "path to golang html template to use instead of the default one")
+	pathCmd.Flags().StringP("template", "", "", "path to HTML template to use instead of the default one")
 	viper.BindPFlag("path-template", pathCmd.Flags().Lookup("template"))
-	pathCmd.Flags().StringSliceP("template-vars", "", []string{}, "extra template variables in case a custom template is used for html output")
+	pathCmd.Flags().StringSliceP("template-vars", "", []string{}, "extra template variables in case a custom template is used. Key value pairs separated with ::: delimiter")
 	viper.BindPFlag("path-template-vars", pathCmd.Flags().Lookup("template-vars"))
 }
 

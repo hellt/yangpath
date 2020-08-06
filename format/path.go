@@ -2,10 +2,15 @@ package format
 
 import (
 	"fmt"
+	"html/template"
+	"io/ioutil"
+	"log"
+	"os"
 	"sort"
 	"strings"
 
 	"github.com/openconfig/goyang/pkg/yang"
+	"github.com/spf13/viper"
 )
 
 // Path represents a path in the YANG tree
@@ -19,6 +24,7 @@ type templateIntput struct {
 	Vars  map[string]string
 }
 
+// default template used in Template
 var defTemplate = `
 <table class="table table-striped">
 <thead>
@@ -35,7 +41,7 @@ var defTemplate = `
 	<td>{{$i}}</td>
 	<td>{{$p.Module}}</td>
 	<td>{{$p.XPath}}</td>
-	<td>{{$p.Type}}</td>
+	<td>{{$p.Type.Name}}</td>
   </tr>
 {{end}}
 </tbody>
@@ -89,4 +95,43 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 		ps = Paths(e.Dir[k], p, ps)
 	}
 	return ps
+}
+
+// Template take template t, paths ps and template variables vars
+// and renders template to stdout
+func Template(t string, ps []*Path, vars []string) error {
+	// template body as string
+	var outTemplate string
+	switch {
+	case t != "":
+		data, err := ioutil.ReadFile(viper.GetString("path-template"))
+		if err != nil {
+			return err
+		}
+		outTemplate = string(data)
+	default:
+		outTemplate = defTemplate
+	}
+
+	tmpl, err := template.New("output-template").Parse(outTemplate)
+	if err != nil {
+		return err
+	}
+	input := &templateIntput{
+		Paths: ps,
+		Vars:  make(map[string]string),
+	}
+	for _, v := range vars {
+		vk := strings.Split(v, ":::")
+		if len(vk) < 2 {
+			log.Printf("ignoring variable %s", v)
+			continue
+		}
+		input.Vars[vk[0]] = strings.Join(vk[1:], ":::")
+	}
+	err = tmpl.Execute(os.Stdout, input)
+	if err != nil {
+		return err
+	}
+	return nil
 }
