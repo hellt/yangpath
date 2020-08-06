@@ -83,7 +83,7 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 			p.SType += fmt.Sprintf("->%v", e.Type.Path)
 		}
 		if e.Type.Kind == yang.Yenum { //handling enumeration types
-			p.SType += fmt.Sprintf(":%v", e.Type.Enum.Names())
+			p.SType += fmt.Sprintf("%+q", e.Type.Enum.Names())
 		}
 		// fmt.Printf("appending %v path to ps=%v\n", p, ps)
 		ps = append(ps, &p)
