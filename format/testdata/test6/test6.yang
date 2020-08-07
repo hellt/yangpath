@@ -6,6 +6,8 @@ module test6 {
 
     prefix "test6";
 
+    import test3 {prefix test3;}
+
      container food {
        choice snack {
            case sports-arena {
@@ -23,6 +25,9 @@ module test6 {
                        enum milk;
                    }
                }
+               leaf testage {
+                    type test3:age;
+                }
            }
        }
     }
