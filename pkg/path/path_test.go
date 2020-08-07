@@ -11,6 +11,7 @@ func TestPaths(t *testing.T) {
 		Module   string
 		TypeName string
 		XPath    string
+		SType    string
 	}
 	tests := map[string]struct {
 		dirs   []string
@@ -23,11 +24,13 @@ func TestPaths(t *testing.T) {
 				{
 					Module:   "test1",
 					TypeName: "string",
+					SType:    "string",
 					XPath:    "/c1/l1[key1=*]/key1",
 				},
 				{
 					Module:   "test1",
 					TypeName: "string",
+					SType:    "string",
 					XPath:    "/c1/l1[key1=*]/leaf2",
 				},
 			}},
@@ -37,11 +40,13 @@ func TestPaths(t *testing.T) {
 				{
 					Module:   "test2",
 					TypeName: "string",
+					SType:    "string",
 					XPath:    "/c1/l1[key1=*]/key1",
 				},
 				{
 					Module:   "test2",
 					TypeName: "string",
+					SType:    "string",
 					XPath:    "/c1/l1[key1=*]/leaf2",
 				},
 			}},
@@ -51,15 +56,18 @@ func TestPaths(t *testing.T) {
 				{
 					Module:   "test3",
 					TypeName: "string",
+					SType:    "string",
 					XPath:    "/c1/l1[key1=*][key2=*]/key1",
 				},
 				{Module: "test3",
 					TypeName: "age",
+					SType:    "age",
 					XPath:    "/c1/l1[key1=*][key2=*]/key2",
 				},
 				{
 					Module:   "test3",
 					TypeName: "int64",
+					SType:    "int64",
 					XPath:    "/c1/l1[key1=*][key2=*]/leaf1",
 				},
 			}},
@@ -69,10 +77,12 @@ func TestPaths(t *testing.T) {
 				{
 					Module:   "test4",
 					TypeName: "identityref",
+					SType:    "identityref->test4:IDENTITY2",
 					XPath:    "/c1/leaf1"},
 				{
 					Module:   "test4",
 					TypeName: "identityref",
+					SType:    "identityref->IDENTITY1",
 					XPath:    "/c1/leaf2",
 				},
 			}},
@@ -82,11 +92,13 @@ func TestPaths(t *testing.T) {
 				{
 					Module:   "test5",
 					TypeName: "string",
+					SType:    "string",
 					XPath:    "/c1/leaf1",
 				},
 				{
 					Module:   "test5",
 					TypeName: "leafref",
+					SType:    "leafref->../leaf1",
 					XPath:    "/c1/leaf2"},
 			}},
 		"test6": {
@@ -95,21 +107,25 @@ func TestPaths(t *testing.T) {
 				{
 					Module:   "test6",
 					TypeName: "enumeration",
+					SType:    "enumeration[\"dark\" \"milk\"]",
 					XPath:    "/food/chocolate",
 				},
 				{
 					Module:   "test6",
 					TypeName: "test3:age",
+					SType:    "test3:age",
 					XPath:    "/food/testage",
 				},
 				{
 					Module:   "test6",
 					TypeName: "empty",
+					SType:    "empty",
 					XPath:    "/food/beer",
 				},
 				{
 					Module:   "test6",
 					TypeName: "empty",
+					SType:    "empty",
 					XPath:    "/food/pretzel",
 				},
 			}},
@@ -135,6 +151,9 @@ func TestPaths(t *testing.T) {
 					t.Fatalf("XPATH wanted %s got %s\n", v.XPath, got[i].XPath)
 				}
 				if v.TypeName != got[i].Type.Name {
+					t.Fatalf("Type wanted %s got %s\n", v.TypeName, got[i].Type.Name)
+				}
+				if v.SType != got[i].SType {
 					t.Fatalf("Type wanted %s got %s\n", v.TypeName, got[i].Type.Name)
 				}
 			}
