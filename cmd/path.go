@@ -18,7 +18,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/hellt/yangform/format"
+	path "github.com/hellt/yangpath/pkg/path"
 	"github.com/openconfig/goyang/pkg/yang"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -32,7 +32,7 @@ var pathCmd = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		modName := viper.GetString("module")
-		names, ms, errs := format.LoadAndSortModules(viper.GetStringSlice("yang-dir"), modName)
+		names, ms, errs := path.LoadAndSortModules(viper.GetStringSlice("yang-dir"), modName)
 		if len(errs) > 0 {
 			for _, err := range errs {
 				log.Errorf("%v\n", err)
@@ -43,7 +43,7 @@ var pathCmd = &cobra.Command{
 		}
 		e := yang.ToEntry(ms.Modules[modName])
 
-		paths := format.Paths(e, format.Path{}, []*format.Path{})
+		paths := path.Paths(e, path.Path{}, []*path.Path{})
 		if viper.GetString("path-format") == "text" {
 			for _, path := range paths {
 				var ps string // path string to print
@@ -65,7 +65,7 @@ var pathCmd = &cobra.Command{
 		if viper.GetString("path-format") == "html" {
 			t := viper.GetString("path-template") // path to the template file
 			vars := viper.GetStringSlice("path-template-vars")
-			if err := format.Template(t, paths, vars); err != nil {
+			if err := path.Template(t, paths, vars); err != nil {
 				log.Fatal(err)
 			}
 		}

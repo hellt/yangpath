@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/hellt/yangform/cmd"
+import "github.com/hellt/yangpath/cmd"
 
 func main() {
 	cmd.Execute()
