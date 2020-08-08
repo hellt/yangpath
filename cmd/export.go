@@ -62,10 +62,10 @@ var exportCmd = &cobra.Command{
 				}
 
 				ps = append(ps, path.XPath)
-				switch viper.GetString("path-with-types") {
+				switch viper.GetString("path-types") {
 				case "yes":
 					ps = append(ps, path.Type.Name)
-				case "expanded":
+				case "detailed":
 					ps = append(ps, path.SType)
 				}
 				fmt.Println(strings.Join(ps, "  "))
@@ -96,8 +96,8 @@ func init() {
 	exportCmd.Flags().BoolP("node-state", "", true, "print node state")
 	viper.BindPFlag("path-node-state", exportCmd.Flags().Lookup("node-state"))
 
-	exportCmd.Flags().StringP("with-types", "", "yes", "display path type information")
-	viper.BindPFlag("path-with-types", exportCmd.Flags().Lookup("with-types"))
+	exportCmd.Flags().StringP("types", "", "yes", "display path type information; one of [yes, no, detailed]")
+	viper.BindPFlag("path-types", exportCmd.Flags().Lookup("types"))
 
 	exportCmd.Flags().StringP("template", "", "", "path to HTML template to use instead of the default one")
 	viper.BindPFlag("path-template", exportCmd.Flags().Lookup("template"))
