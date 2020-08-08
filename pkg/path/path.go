@@ -73,7 +73,6 @@ var defTemplate = `
 func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 	// fmt.Printf("walkEntry is called with p=%v and ps=%v\n", p, ps)
 	// fmt.Println("current entry name:", e.Name)
-
 	switch e.Node.(type) {
 	case *yang.Module: // a module has no parent
 		p.Module = e.Name
@@ -90,7 +89,7 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 		p.XPath += fmt.Sprintf("/%s", e.Name)
 		p.Type = e.Node.(*yang.Leaf).Type
 		p.SType = e.Node.(*yang.Leaf).Type.Name
-		if e.Type.IdentityBase != nil { // if the type is identityref
+		if e.Node.(*yang.Leaf).Type.IdentityBase != nil { // if the immediate type is identityref
 			p.SType += fmt.Sprintf("->%v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
 		}
 		if e.Type.Kind == yang.Yleafref { //handling leafref
