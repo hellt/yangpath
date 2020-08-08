@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	path "github.com/hellt/yangpath/pkg/path"
 	"github.com/openconfig/goyang/pkg/yang"
@@ -45,19 +46,19 @@ var exportCmd = &cobra.Command{
 		paths := path.Paths(e, path.Path{}, []*path.Path{})
 		if viper.GetString("path-format") == "text" {
 			for _, path := range paths {
-				var ps string // path string to print
+				var ps []string // path string to print as a slice
 
 				if viper.GetString("path-with-module") == "yes" {
-					ps += fmt.Sprintf("%s    ", path.Module)
+					ps = append(ps, path.Module)
 				}
-				ps += fmt.Sprintf("%s", path.XPath)
+				ps = append(ps, path.XPath)
 				switch viper.GetString("path-with-types") {
 				case "yes":
-					ps += fmt.Sprintf("    %s", path.Type.Name)
+					ps = append(ps, path.Type.Name)
 				case "expanded":
-					ps += fmt.Sprintf("    %s", path.SType)
+					ps = append(ps, path.SType)
 				}
-				fmt.Println(ps)
+				fmt.Println(strings.Join(ps, "    "))
 			}
 		}
 
