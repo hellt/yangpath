@@ -46,7 +46,7 @@ func init() {
 	// rootCmd.PersistentFlags().BoolP("debug", "d", false, "debug")
 	// viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 
-	rootCmd.PersistentFlags().StringP("module", "m", "", "YANG module name (required)")
+	rootCmd.PersistentFlags().StringP("module", "m", "", "path to the YANG file to use for path export (required)")
 	viper.BindPFlag("module", rootCmd.PersistentFlags().Lookup("module"))
 	rootCmd.MarkPersistentFlagRequired("module")
 }

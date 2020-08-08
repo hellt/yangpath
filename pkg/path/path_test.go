@@ -15,6 +15,7 @@
 package path
 
 import (
+	"log"
 	"testing"
 
 	"github.com/openconfig/goyang/pkg/yang"
@@ -33,7 +34,7 @@ func TestPaths(t *testing.T) {
 		want   []want
 	}{
 		"test1": {
-			dirs: []string{"testdata/test1"}, module: "test1",
+			dirs: []string{"testdata/test1"}, module: "testdata/test1/test1.yang",
 			want: []want{
 				{
 					Module:   "test1",
@@ -49,7 +50,7 @@ func TestPaths(t *testing.T) {
 				},
 			}},
 		"test2": {
-			dirs: []string{"testdata/test2"}, module: "test2",
+			dirs: []string{"testdata/test2"}, module: "testdata/test2/test2.yang",
 			want: []want{
 				{
 					Module:   "test2",
@@ -65,7 +66,7 @@ func TestPaths(t *testing.T) {
 				},
 			}},
 		"test3": {
-			dirs: []string{"testdata/test3"}, module: "test3",
+			dirs: []string{"testdata/test3"}, module: "testdata/test3/test3.yang",
 			want: []want{
 				{
 					Module:   "test3",
@@ -86,7 +87,7 @@ func TestPaths(t *testing.T) {
 				},
 			}},
 		"test4": {
-			dirs: []string{"testdata/test4"}, module: "test4",
+			dirs: []string{"testdata/test4"}, module: "testdata/test4/test4.yang",
 			want: []want{
 				{
 					Module:   "test4",
@@ -101,7 +102,7 @@ func TestPaths(t *testing.T) {
 				},
 			}},
 		"test5": {
-			dirs: []string{"testdata/test5"}, module: "test5",
+			dirs: []string{"testdata/test5"}, module: "testdata/test5/test5.yang",
 			want: []want{
 				{
 					Module:   "test5",
@@ -116,7 +117,7 @@ func TestPaths(t *testing.T) {
 					XPath:    "/c1/leaf2"},
 			}},
 		"test6": {
-			dirs: []string{"testdata/test6", "testdata/test3"}, module: "test6",
+			dirs: []string{"testdata/test6", "testdata/test3"}, module: "testdata/test6/test6.yang",
 			want: []want{
 				{
 					Module:   "test6",
@@ -147,14 +148,18 @@ func TestPaths(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			_, ms, errs := LoadAndSortModules(tc.dirs, tc.module)
-			if len(errs) > 0 {
-				for _, err := range errs {
-					t.Errorf("%v\n", err)
-				}
+			modName, err := GetModuleName(tc.module)
+			if err != nil {
+				log.Fatal(err)
 			}
-			e := yang.ToEntry(ms.Modules[tc.module])
-			// spew.Dump(e)
+			if err = AddYANGDirs(tc.dirs); err != nil {
+				log.Fatal(err)
+			}
+
+			e, errs := yang.GetModule(modName)
+			for _, err := range errs {
+				log.Fatalf("%v\n", err)
+			}
 			got := Paths(e, Path{}, []*Path{})
 
 			for i, v := range tc.want {

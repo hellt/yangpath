@@ -15,43 +15,32 @@
 package path
 
 import (
-	"fmt"
-	"os"
-	"sort"
-
 	"github.com/openconfig/goyang/pkg/yang"
 )
 
-// LoadAndSortModules loads and sort YANG module m
-// using the scope referenced by a list of dirs
-// returns module names, *yang.Modules and a list of errors encountered
-func LoadAndSortModules(dirs []string, m string) ([]string, *yang.Modules, []error) {
-	// for each yang directory referenced with yang-dir flag
-	// perform a search for directories with YANG files inside
+// GetModuleName takes a path p to the YANG file and returns the module name
+func GetModuleName(p string) (string, error) {
+	var name string
+	ms := yang.NewModules()
+	if err := ms.Read(p); err != nil {
+		return "", err
+	}
+	for _, v := range ms.Modules {
+		name = v.Name
+	}
+	return name, nil
+}
+
+//AddYANGDirs adds directories which have YANG files inside taking dirs as a list of directories
+func AddYANGDirs(dirs []string) error {
 	for _, path := range dirs {
 		expanded, err := yang.PathsWithModules(path)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			continue
+			return err
 		}
 		yang.AddPath(expanded...)
 	}
-	ms := yang.NewModules()
-
-	if err := ms.Read(m); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
-	errs := ms.Process()
-
-	names := make([]string, 0)
-	for _, m := range ms.Modules {
-		if snl(m.Name, names) {
-			continue
-		}
-		names = append(names, m.Name)
-	}
-	sort.Strings(names)
-	return names, ms, errs
+	return nil
 }
 
 // snl is a string-in-list-of-strings checking func

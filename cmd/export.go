@@ -31,17 +31,18 @@ var exportCmd = &cobra.Command{
 	Short: "export xpath-styled paths from a given YANG module",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		modName := viper.GetString("module")
-		names, ms, errs := path.LoadAndSortModules(viper.GetStringSlice("yang-dir"), modName)
-		if len(errs) > 0 {
-			for _, err := range errs {
-				log.Errorf("%v\n", err)
-			}
+		modName, err := path.GetModuleName(viper.GetString("module"))
+		if err != nil {
+			log.Fatal(err)
 		}
-		if !snl(modName, names) && modName != "" {
-			return fmt.Errorf("unknown module: %s", modName)
+		if err = path.AddYANGDirs(viper.GetStringSlice("yang-dir")); err != nil {
+			log.Fatal(err)
 		}
-		e := yang.ToEntry(ms.Modules[modName])
+
+		e, errs := yang.GetModule(modName)
+		for _, err := range errs {
+			log.Fatalf("%v\n", err)
+		}
 
 		paths := path.Paths(e, path.Path{}, []*path.Path{})
 		if viper.GetString("path-format") == "text" {
