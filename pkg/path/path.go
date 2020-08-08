@@ -84,10 +84,12 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 		if e.Config != yang.TSUnset {
 			p.Config = e.Config
 		}
-		keys := strings.Split(e.Key, " ")
 		var keyElem string
-		for _, k := range keys {
-			keyElem += fmt.Sprintf("[%s=*]", k)
+		if e.Key != "" { // for key-less lists skip the keyElem creation
+			keys := strings.Split(e.Key, " ")
+			for _, k := range keys {
+				keyElem += fmt.Sprintf("[%s=*]", k)
+			}
 		}
 		p.XPath += fmt.Sprintf("/%s%s", e.Name, keyElem)
 	case *yang.LeafList:
