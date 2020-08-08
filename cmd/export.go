@@ -47,6 +47,18 @@ var exportCmd = &cobra.Command{
 		paths := path.Paths(e, path.Path{}, []*path.Path{})
 		if viper.GetString("path-format") == "text" {
 			for _, path := range paths {
+
+				switch viper.GetString("path-only-nodes") {
+				case "config":
+					if path.Config == yang.TSFalse {
+						continue
+					}
+				case "state":
+					if path.Config == yang.TSTrue || path.Config == yang.TSUnset {
+						continue
+					}
+				}
+
 				var ps []string // path string to print as a slice
 
 				if viper.GetString("path-with-module") == "yes" {
@@ -95,6 +107,9 @@ func init() {
 
 	exportCmd.Flags().BoolP("node-state", "", true, "print node state")
 	viper.BindPFlag("path-node-state", exportCmd.Flags().Lookup("node-state"))
+
+	exportCmd.Flags().StringP("only-nodes", "o", "all", "display only nodes of the given type; one of [all, config, state]")
+	viper.BindPFlag("path-only-nodes", exportCmd.Flags().Lookup("only-nodes"))
 
 	exportCmd.Flags().StringP("types", "", "yes", "display path type information; one of [yes, no, detailed]")
 	viper.BindPFlag("path-types", exportCmd.Flags().Lookup("types"))
