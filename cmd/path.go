@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+Copyright © 2020 Roman Dodin <dodin.roman@gmail.com>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-// pathCmd represents the path command
-var pathCmd = &cobra.Command{
-	Use:   "path",
-	Short: "generate xpath or restconf style paths from yang files",
+// exportCmd represents the export command
+var exportCmd = &cobra.Command{
+	Use:   "export",
+	Short: "export xpath-styled paths from a given YANG module",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		modName := viper.GetString("module")
@@ -75,23 +75,23 @@ var pathCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(pathCmd)
+	rootCmd.AddCommand(exportCmd)
 
-	pathCmd.Flags().StringP("format", "f", "text", "paths output format. One of [text, html]")
-	viper.BindPFlag("path-format", pathCmd.Flags().Lookup("format"))
+	exportCmd.Flags().StringP("format", "f", "text", "paths output format. One of [text, html]")
+	viper.BindPFlag("path-format", exportCmd.Flags().Lookup("format"))
 
-	pathCmd.Flags().StringP("type", "t", "xpath", "path types, xpath or restconf")
-	viper.BindPFlag("path-type", pathCmd.Flags().Lookup("type"))
+	exportCmd.Flags().StringP("type", "t", "xpath", "path types, xpath or restconf")
+	viper.BindPFlag("path-type", exportCmd.Flags().Lookup("type"))
 
-	pathCmd.Flags().StringP("with-module", "", "no", "print module name")
-	viper.BindPFlag("path-with-module", pathCmd.Flags().Lookup("with-module"))
+	exportCmd.Flags().StringP("with-module", "", "no", "print module name")
+	viper.BindPFlag("path-with-module", exportCmd.Flags().Lookup("with-module"))
 
-	pathCmd.Flags().StringP("with-types", "", "yes", "display path type information")
-	viper.BindPFlag("path-with-types", pathCmd.Flags().Lookup("with-types"))
+	exportCmd.Flags().StringP("with-types", "", "yes", "display path type information")
+	viper.BindPFlag("path-with-types", exportCmd.Flags().Lookup("with-types"))
 
-	pathCmd.Flags().StringP("template", "", "", "path to HTML template to use instead of the default one")
-	viper.BindPFlag("path-template", pathCmd.Flags().Lookup("template"))
+	exportCmd.Flags().StringP("template", "", "", "path to HTML template to use instead of the default one")
+	viper.BindPFlag("path-template", exportCmd.Flags().Lookup("template"))
 
-	pathCmd.Flags().StringSliceP("template-vars", "", []string{}, "extra template variables in case a custom template is used. Key value pairs separated with ::: delimiter")
-	viper.BindPFlag("path-template-vars", pathCmd.Flags().Lookup("template-vars"))
+	exportCmd.Flags().StringSliceP("template-vars", "", []string{}, "extra template variables in case a custom template is used. Key value pairs separated with ::: delimiter")
+	viper.BindPFlag("path-template-vars", exportCmd.Flags().Lookup("template-vars"))
 }
