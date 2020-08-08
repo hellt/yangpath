@@ -90,9 +90,6 @@ func init() {
 	exportCmd.Flags().StringP("format", "f", "text", "paths output format. One of [text, html]")
 	viper.BindPFlag("path-format", exportCmd.Flags().Lookup("format"))
 
-	exportCmd.Flags().StringP("type", "t", "xpath", "path types, xpath or restconf")
-	viper.BindPFlag("path-type", exportCmd.Flags().Lookup("type"))
-
 	exportCmd.Flags().StringP("with-module", "", "no", "print module name")
 	viper.BindPFlag("path-with-module", exportCmd.Flags().Lookup("with-module"))
 
