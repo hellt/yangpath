@@ -89,14 +89,37 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 		p.XPath += fmt.Sprintf("/%s", e.Name)
 		p.Type = e.Node.(*yang.Leaf).Type
 		p.SType = e.Node.(*yang.Leaf).Type.Name
-		if e.Node.(*yang.Leaf).Type.IdentityBase != nil { // if the immediate type is identityref
+
+		// if the immediate type is identityref
+		if e.Node.(*yang.Leaf).Type.IdentityBase != nil {
 			p.SType += fmt.Sprintf("->%v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
 		}
-		if e.Type.Kind == yang.Yleafref { //handling leafref
+
+		//handling leafref
+		if e.Type.Kind == yang.Yleafref {
 			p.SType += fmt.Sprintf("->%v", e.Type.Path)
 		}
-		if e.Type.Kind == yang.Yenum { //handling enumeration types
+
+		//handling enumeration types
+		if e.Type.Kind == yang.Yenum {
 			p.SType += fmt.Sprintf("%+q", e.Type.Enum.Names())
+		}
+
+		//handling union types
+		if e.Type.Kind == yang.Yunion {
+			var u []string // list of union types
+			for _, ut := range e.Node.(*yang.Leaf).Type.Type {
+				switch {
+				case ut.IdentityBase != nil:
+					u = append(u, fmt.Sprintf("identityref->%v", ut.IdentityBase.Name))
+				case ut.YangType.Kind == yang.Yenum:
+					u = append(u, fmt.Sprintf("enumeration%+q", ut.YangType.Enum.Names()))
+				default:
+					u = append(u, ut.Name)
+				}
+
+			}
+			p.SType += fmt.Sprintf("{%v}", strings.Join(u, " "))
 		}
 		// fmt.Printf("appending %v path to ps=%v\n", p, ps)
 		ps = append(ps, &p)
