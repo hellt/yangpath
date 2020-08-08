@@ -111,7 +111,7 @@ func init() {
 	exportCmd.Flags().StringP("only-nodes", "o", "all", "display only nodes of the given type; one of [all, config, state]")
 	viper.BindPFlag("path-only-nodes", exportCmd.Flags().Lookup("only-nodes"))
 
-	exportCmd.Flags().StringP("types", "", "yes", "display path type information; one of [yes, no, detailed]")
+	exportCmd.Flags().StringP("types", "", "detailed", "display path type information; one of [yes, no, detailed]")
 	viper.BindPFlag("path-types", exportCmd.Flags().Lookup("types"))
 
 	exportCmd.Flags().StringP("template", "", "", "path to HTML template to use instead of the default one")
