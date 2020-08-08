@@ -72,8 +72,6 @@ var defTemplate = `
 // populating Path structure along the way
 // returns a list of pointers to the individual Path
 func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
-	// fmt.Printf("walkEntry is called with p=%v and ps=%v\n", p, ps)
-	// fmt.Println("current entry name:", e.Name)
 	switch e.Node.(type) {
 	case *yang.Module: // a module has no parent
 		p.Module = e.Name
@@ -135,11 +133,9 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 			}
 			p.SType += fmt.Sprintf("{%v}", strings.Join(u, " "))
 		}
-		// fmt.Printf("appending %v path to ps=%v\n", p, ps)
 		ps = append(ps, &p)
 	}
 
-	// fmt.Println("building path is", p)
 	// ne is a nested entries list
 	ne := make([]string, 0, len(e.Dir))
 
