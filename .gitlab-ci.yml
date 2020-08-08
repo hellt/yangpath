@@ -1,0 +1,16 @@
+stages:
+  - deploy
+
+pages:
+  stage: deploy
+  image:
+    name: squidfunk/mkdocs-material:5.5.0
+    entrypoint: [""]
+  script:
+    - mkdocs build -s -d public
+  # send all files from public directory to the CI server
+  artifacts:
+    paths:
+      - public
+  only:
+    - master # this job will affect only the 'master' branch
