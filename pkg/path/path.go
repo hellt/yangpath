@@ -32,7 +32,8 @@ type Path struct {
 	Module string
 	Type   *yang.Type
 	XPath  string
-	SType  string // string representation of the Type
+	SType  string        // string representation of the Type
+	Config yang.TriState // type of the node (config or read-only)
 }
 
 // templateInput holds HTML template variables
@@ -78,14 +79,27 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 		p.Module = e.Name
 	case *yang.Container:
 		p.XPath += fmt.Sprintf("/%s", e.Name)
+		if e.Config != yang.TSUnset {
+			p.Config = e.Config
+		}
 	case *yang.List:
+		if e.Config != yang.TSUnset {
+			p.Config = e.Config
+		}
 		keys := strings.Split(e.Key, " ")
 		var keyElem string
 		for _, k := range keys {
 			keyElem += fmt.Sprintf("[%s=*]", k)
 		}
 		p.XPath += fmt.Sprintf("/%s%s", e.Name, keyElem)
+	case *yang.LeafList:
+		if e.Config != yang.TSUnset {
+			p.Config = e.Config
+		}
 	case *yang.Leaf:
+		if e.Config != yang.TSUnset {
+			p.Config = e.Config
+		}
 		p.XPath += fmt.Sprintf("/%s", e.Name)
 		p.Type = e.Node.(*yang.Leaf).Type
 		p.SType = e.Node.(*yang.Leaf).Type.Name

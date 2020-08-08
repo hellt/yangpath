@@ -52,6 +52,15 @@ var exportCmd = &cobra.Command{
 				if viper.GetString("path-with-module") == "yes" {
 					ps = append(ps, path.Module)
 				}
+
+				if viper.GetBool("path-node-state") {
+					cfgElem := "[rw]"
+					if path.Config == yang.TSFalse {
+						cfgElem = "[ro]"
+					}
+					ps = append(ps, cfgElem)
+				}
+
 				ps = append(ps, path.XPath)
 				switch viper.GetString("path-with-types") {
 				case "yes":
@@ -59,7 +68,7 @@ var exportCmd = &cobra.Command{
 				case "expanded":
 					ps = append(ps, path.SType)
 				}
-				fmt.Println(strings.Join(ps, "    "))
+				fmt.Println(strings.Join(ps, "  "))
 			}
 		}
 
@@ -86,6 +95,9 @@ func init() {
 
 	exportCmd.Flags().StringP("with-module", "", "no", "print module name")
 	viper.BindPFlag("path-with-module", exportCmd.Flags().Lookup("with-module"))
+
+	exportCmd.Flags().BoolP("node-state", "", true, "print node state")
+	viper.BindPFlag("path-node-state", exportCmd.Flags().Lookup("node-state"))
 
 	exportCmd.Flags().StringP("with-types", "", "yes", "display path type information")
 	viper.BindPFlag("path-with-types", exportCmd.Flags().Lookup("with-types"))
