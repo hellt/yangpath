@@ -40,14 +40,15 @@ func Execute() {
 func init() {
 	rootCmd.SilenceUsage = true
 
-	rootCmd.PersistentFlags().StringSliceP("yang-dir", "y", []string{""}, "directory(ies) with YANG modules")
+	rootCmd.PersistentFlags().StringSliceP("yang-dir", "y", []string{""}, "directory(-ies) with YANG modules. Flag can be provided multiple times (-y dir1 -y dir2).\n(default \"./\")")
 	viper.BindPFlag("yang-dir", rootCmd.PersistentFlags().Lookup("yang-dir"))
 
 	// rootCmd.PersistentFlags().BoolP("debug", "d", false, "debug")
 	// viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
 
-	rootCmd.PersistentFlags().StringP("module", "m", "", "module to export")
+	rootCmd.PersistentFlags().StringP("module", "m", "", "YANG module name (required)")
 	viper.BindPFlag("module", rootCmd.PersistentFlags().Lookup("module"))
+	rootCmd.MarkPersistentFlagRequired("module")
 }
 
 // snl is a string-in-list-of-strings checking func
