@@ -45,6 +45,8 @@ var exportCmd = &cobra.Command{
 		}
 
 		paths := path.Paths(e, path.Path{}, []*path.Path{})
+
+		// outputting paths in text format
 		if viper.GetString("path-format") == "text" {
 			for _, path := range paths {
 
@@ -73,7 +75,13 @@ var exportCmd = &cobra.Command{
 					ps = append(ps, cfgElem)
 				}
 
-				ps = append(ps, path.XPath)
+				switch viper.GetString("path-style") {
+				case "xpath":
+					ps = append(ps, path.XPath)
+				case "restconf":
+					ps = append(ps, path.RestConfPath)
+				}
+
 				switch viper.GetString("path-types") {
 				case "yes":
 					ps = append(ps, path.Type.Name)
@@ -101,6 +109,9 @@ func init() {
 
 	exportCmd.Flags().StringP("format", "f", "text", "paths output format. One of [text, html]")
 	viper.BindPFlag("path-format", exportCmd.Flags().Lookup("format"))
+
+	exportCmd.Flags().StringP("style", "s", "xpath", "style of the path. One of [xpath, restconf]")
+	viper.BindPFlag("path-style", exportCmd.Flags().Lookup("style"))
 
 	exportCmd.Flags().StringP("with-module", "", "no", "print module name")
 	viper.BindPFlag("path-with-module", exportCmd.Flags().Lookup("with-module"))

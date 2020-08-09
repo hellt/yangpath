@@ -29,11 +29,12 @@ import (
 
 // Path represents a path in the YANG tree
 type Path struct {
-	Module string
-	Type   *yang.Type
-	XPath  string
-	SType  string        // string representation of the Type
-	Config yang.TriState // type of the node (config or read-only)
+	Module       string
+	Type         *yang.Type
+	XPath        string
+	RestConfPath string
+	SType        string        // string representation of the Type
+	Config       yang.TriState // type of the node (config or read-only)
 }
 
 // templateInput holds HTML template variables
@@ -70,13 +71,14 @@ var defTemplate = `
 
 // Paths recursively traverses the entry's e directory Dir till the leaf node
 // populating Path structure along the way
-// returns a list of pointers to the individual Path
+// returns a list of pointers to the Path
 func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 	switch e.Node.(type) {
 	case *yang.Module: // a module has no parent
 		p.Module = e.Name
 	case *yang.Container:
 		p.XPath += fmt.Sprintf("/%s", e.Name)
+		p.RestConfPath += fmt.Sprintf("/%s", e.Name)
 		if e.Config != yang.TSUnset {
 			p.Config = e.Config
 		}
@@ -84,14 +86,16 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 		if e.Config != yang.TSUnset {
 			p.Config = e.Config
 		}
-		var keyElem string
-		if e.Key != "" { // for key-less lists skip the keyElem creation
+		var xKElem, rKElem string // xpath and restconf key elements
+		if e.Key != "" {          // for key-less lists skip the keyElem creation
 			keys := strings.Split(e.Key, " ")
 			for _, k := range keys {
-				keyElem += fmt.Sprintf("[%s=*]", k)
+				xKElem += fmt.Sprintf("[%s=*]", k)
 			}
+			rKElem = strings.Join(keys, ",") // catenating restconf keys delimited by comma
 		}
-		p.XPath += fmt.Sprintf("/%s%s", e.Name, keyElem)
+		p.XPath += fmt.Sprintf("/%s%s", e.Name, xKElem)
+		p.RestConfPath += fmt.Sprintf("/%s=%s", e.Name, rKElem)
 	case *yang.LeafList:
 		if e.Config != yang.TSUnset {
 			p.Config = e.Config
@@ -101,6 +105,7 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 			p.Config = e.Config
 		}
 		p.XPath += fmt.Sprintf("/%s", e.Name)
+		p.RestConfPath += fmt.Sprintf("/%s", e.Name)
 		p.Type = e.Node.(*yang.Leaf).Type
 		p.SType = e.Node.(*yang.Leaf).Type.Name
 
