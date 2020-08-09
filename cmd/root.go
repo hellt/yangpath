@@ -40,7 +40,7 @@ func Execute() {
 func init() {
 	rootCmd.SilenceUsage = true
 
-	rootCmd.PersistentFlags().StringSliceP("yang-dir", "y", []string{""}, "directory(-ies) with YANG modules. Flag can be provided multiple times (-y dir1 -y dir2).\n(default \"./\")")
+	rootCmd.PersistentFlags().StringSliceP("yang-dir", "y", []string{"./"}, "directory(-ies) with YANG modules. Values can be provided multiple times (-y dir1 -y dir2)")
 	viper.BindPFlag("yang-dir", rootCmd.PersistentFlags().Lookup("yang-dir"))
 
 	// rootCmd.PersistentFlags().BoolP("debug", "d", false, "debug")
