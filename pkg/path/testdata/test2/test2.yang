@@ -4,7 +4,7 @@
 module test2 {
 
     yang-version "1";
-    namespace "https://hellt/yangform/test2";
+    namespace "https://hellt/yangpath/test2";
 
     prefix "test2";
 
