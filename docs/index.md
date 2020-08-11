@@ -1,5 +1,5 @@
 <nbsp/>
-<p style="text-align:center;">![headline](images/yangpath_logo_paths.svg)</p>
+<p style="text-align:center;">![headline](images/yangpath_logo_paths_m.svg)</p>
 
 [![github release](https://img.shields.io/github/release/hellt/yangpath.svg?style=flat-square&color=00c9ff&labelColor=bec8d2)](https://github.com/hellt/yangpath/releases/)
 [![Github all releases](https://img.shields.io/github/downloads/hellt/yangpath/total.svg?style=flat-square&color=00c9ff&labelColor=bec8d2)](https://github.com/hellt/yangpath/releases/)

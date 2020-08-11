@@ -1,4 +1,4 @@
-<p align=center><img src=https://gitlab.com/rdodin/pics/-/wikis/uploads/f7725125d0f78721d7bb68aceca26456/yangpath_logo_paths.svg?sanitize=true/></p>
+<p align=center><img src=https://gitlab.com/rdodin/pics/-/wikis/uploads/d75fb0e5c73cbe358bf900e16961cffc/yangpath_logo_paths.svg?sanitize=true/></p>
 
 [![github release](https://img.shields.io/github/release/hellt/yangpath.svg?style=flat-square&color=00c9ff&labelColor=bec8d2)](https://github.com/hellt/yangpath/releases/)
 [![Github all releases](https://img.shields.io/github/downloads/hellt/yangpath/total.svg?style=flat-square&color=00c9ff&labelColor=bec8d2)](https://github.com/hellt/yangpath/releases/)
