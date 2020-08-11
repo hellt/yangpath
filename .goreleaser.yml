@@ -1,0 +1,66 @@
+project_name: yangpath
+builds:
+  - env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X github.com/hellt/yangpath/cmd.version={{.Version}} -X github.com/hellt/yangpath/cmd.commit={{.ShortCommit}} -X github.com/hellt/yangpath/cmd.date={{.Date}} -X github.com/hellt/yangpath/cmd.gitURL={{.GitURL}}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - 386
+      - arm
+      - arm64
+    hooks:
+      post: upx "{{ .Path }}"
+dockers:
+  - goos: linux
+    goarch: amd64
+    binaries:
+      - yangpath
+    image_templates:
+      - "yangpath/yangpath:latest"
+      - 'yangpath/yangpath:{{ replace .Version "v" ""}}'
+    dockerfile: Dockerfile
+    skip_push: false
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      amd64: x86_64
+      386: i386
+      arm: armv7
+      arm64: aarch64
+    format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: "checksums.txt"
+snapshot:
+  name_template: "{{ .Tag }}"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+nfpms:
+  - id: yangpath
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    replacements:
+      amd64: x86_64
+      386: i386
+      darwin: darwin
+      linux: linux
+    vendor: yangpath
+    homepage: https://yangpath.netdevops.me
+    maintainer: Roman Dodin <dodin.roman@gmail.com>
+    description: YANG path exporter
+    license: Apache 2.0
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/local/bin
