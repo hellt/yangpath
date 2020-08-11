@@ -5,5 +5,5 @@ LABEL documentation="https://yangpath.netdevops.me"
 LABEL repo="https://github.com/hellt/yangpath"
 
 COPY yangpath /app/yangpath
-ENTRYPOINT [ "/app/versionpath" ]
+ENTRYPOINT [ "/app/yangpath" ]
 CMD [ "version" ]
