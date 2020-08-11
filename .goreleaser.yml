@@ -21,8 +21,8 @@ dockers:
     binaries:
       - yangpath
     image_templates:
-      - "yangpath/yangpath:latest"
-      - 'yangpath/yangpath:{{ replace .Version "v" ""}}'
+      - "hellt/yangpath:latest"
+      - 'hellt/yangpath:{{ replace .Version "v" ""}}'
     dockerfile: Dockerfile
     skip_push: false
 archives:
