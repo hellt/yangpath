@@ -19,7 +19,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -39,14 +38,4 @@ func Execute() {
 
 func init() {
 	rootCmd.SilenceUsage = true
-
-	rootCmd.PersistentFlags().StringSliceP("yang-dir", "y", []string{"./"}, "directory(-ies) with YANG modules. Values can be provided multiple times (-y dir1 -y dir2)")
-	viper.BindPFlag("yang-dir", rootCmd.PersistentFlags().Lookup("yang-dir"))
-
-	// rootCmd.PersistentFlags().BoolP("debug", "d", false, "debug")
-	// viper.BindPFlag("debug", rootCmd.PersistentFlags().Lookup("debug"))
-
-	rootCmd.PersistentFlags().StringP("module", "m", "", "path to the YANG file to use for path export (required)")
-	viper.BindPFlag("module", rootCmd.PersistentFlags().Lookup("module"))
-	rootCmd.MarkPersistentFlagRequired("module")
 }
