@@ -49,7 +49,7 @@ var exportCmd = &cobra.Command{
 			mn = m.Name
 		}
 		errs := ms.Process()
-		for err := range errs {
+		for _, err := range errs {
 			log.Fatal(err)
 		}
 
