@@ -119,10 +119,10 @@ func init() {
 	rootCmd.AddCommand(exportCmd)
 
 	exportCmd.Flags().StringSliceP("yang-dir", "y", []string{"./"}, "directory(-ies) with YANG modules. Values can be provided multiple times (-y dir1 -y dir2)")
-	viper.BindPFlag("yang-dir", rootCmd.PersistentFlags().Lookup("yang-dir"))
+	viper.BindPFlag("yang-dir", exportCmd.Flags().Lookup("yang-dir"))
 
 	exportCmd.Flags().StringP("module", "m", "", "path to the YANG file to use for path export (required)")
-	viper.BindPFlag("module", rootCmd.PersistentFlags().Lookup("module"))
+	viper.BindPFlag("module", exportCmd.Flags().Lookup("module"))
 	exportCmd.MarkFlagRequired("module")
 
 	exportCmd.Flags().StringP("format", "f", "text", "paths output format. One of [text, html]")
