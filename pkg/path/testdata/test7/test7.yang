@@ -1,0 +1,21 @@
+module test7 {
+
+    yang-version "1";
+    namespace "https://hellt/yangpath/test7";
+    prefix "test7";
+
+    import common { prefix comm; }
+
+    typedef network-instance-subintf-ref {
+        type comm:subinterface-all;
+    }
+
+     container test {
+        list interface {
+            key "name";
+            leaf name {
+                type test7:network-instance-subintf-ref;
+            }
+        }
+    }
+}

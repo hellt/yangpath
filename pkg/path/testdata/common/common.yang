@@ -1,0 +1,10 @@
+module common {
+  yang-version 1;
+  namespace "urn:srl_nokia/common";
+  prefix "comm";
+
+  typedef subinterface-all {
+    type string {
+    }
+  }
+}
