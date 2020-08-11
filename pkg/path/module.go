@@ -42,13 +42,3 @@ func AddYANGDirs(dirs []string) error {
 	}
 	return nil
 }
-
-// snl is a string-in-list-of-strings checking func
-func snl(s string, l []string) bool {
-	for _, sl := range l {
-		if s == sl {
-			return true
-		}
-	}
-	return false
-}

@@ -50,13 +50,3 @@ func init() {
 	viper.BindPFlag("module", rootCmd.PersistentFlags().Lookup("module"))
 	rootCmd.MarkPersistentFlagRequired("module")
 }
-
-// snl is a string-in-list-of-strings checking func
-func snl(s string, l []string) bool {
-	for _, sl := range l {
-		if s == sl {
-			return true
-		}
-	}
-	return false
-}
