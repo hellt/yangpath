@@ -1,6 +1,10 @@
 site_name: yangpath
 nav:
   - Home: index.md
+  - Installation: install.md
+  - About YANG Paths: about-paths.md
+  - Exporting Paths: export.md
+  - Generating HTML: html-template.md
 
 site_author: Roman Dodin
 site_description: >-
@@ -20,7 +24,6 @@ theme:
   include_search_page: false
   search_index_only: true
 
-  # Default values, taken from mkdocs_theme.yml
   language: en
   palette:
     scheme: preference
@@ -29,8 +32,8 @@ theme:
   font:
     text: Manrope
     code: Fira Mono
-  icon:
-    logo: octicons/pulse-16
+  # icon:
+  logo: images/mediation-white-48dp.svg
   favicon: images/mediation-black-24dp.svg
 
 extra_css:
