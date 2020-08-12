@@ -55,7 +55,8 @@ var exportCmd = &cobra.Command{
 
 		e := yang.ToEntry(ms.Modules[mn])
 
-		paths := path.Paths(e, path.Path{}, []*path.Path{})
+		var paths []*path.Path
+		path.Paths(e, path.Path{}, &paths)
 
 		// outputting paths in text format
 		if viper.GetString("path-format") == "text" {
