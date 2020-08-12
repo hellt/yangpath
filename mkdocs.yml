@@ -5,6 +5,7 @@ nav:
   - About YANG Paths: about-paths.md
   - Exporting Paths: export.md
   - Generating HTML: html-template.md
+  - Multivendor examples: multi-vendor.md
 
 site_author: Roman Dodin
 site_description: >-
