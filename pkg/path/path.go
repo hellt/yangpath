@@ -72,7 +72,7 @@ var defTemplate = `
 // Paths recursively traverses the entry's e directory Dir till the leaf node
 // populating Path structure along the way
 // returns a list of pointers to the Path
-func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
+func Paths(e *yang.Entry, p Path, ps *[]*Path) {
 	switch e.Node.(type) {
 	case *yang.Module: // a module has no parent
 		p.Module = e.Name
@@ -140,7 +140,7 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 			}
 			p.SType += fmt.Sprintf("{%v}", strings.Join(u, " "))
 		}
-		ps = append(ps, &p)
+		*ps = append(*ps, &p)
 	}
 
 	// ne is a nested entries list
@@ -151,9 +151,8 @@ func Paths(e *yang.Entry, p Path, ps []*Path) []*Path {
 	}
 	sort.Strings(ne)
 	for _, k := range ne {
-		ps = Paths(e.Dir[k], p, ps)
+		Paths(e.Dir[k], p, ps)
 	}
-	return ps
 }
 
 // Template take template t, paths ps and template variables vars

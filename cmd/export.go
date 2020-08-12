@@ -41,6 +41,9 @@ var exportCmd = &cobra.Command{
 		if err := ms.Read(viper.GetString("module")); err != nil {
 			log.Fatal(err)
 		}
+		if len(ms.Modules) == 0 {
+			log.Fatal("no modules found, exporting from submodules is not yet supported")
+		}
 		var mn string // module name
 		// at this moment ms contains only one module
 		// which was read by the path provided within -m flag
@@ -55,7 +58,8 @@ var exportCmd = &cobra.Command{
 
 		e := yang.ToEntry(ms.Modules[mn])
 
-		paths := path.Paths(e, path.Path{}, []*path.Path{})
+		var paths []*path.Path
+		path.Paths(e, path.Path{}, &paths)
 
 		// outputting paths in text format
 		if viper.GetString("path-format") == "text" {
