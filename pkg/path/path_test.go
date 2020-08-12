@@ -148,19 +148,34 @@ func TestPaths(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			modName, err := GetModuleName(tc.module)
-			if err != nil {
-				log.Fatal(err)
-			}
+			var err error
 			if err = AddYANGDirs(tc.dirs); err != nil {
 				log.Fatal(err)
 			}
 
-			e, errs := yang.GetModule(modName)
-			for _, err := range errs {
-				log.Fatalf("%v\n", err)
+			ms := yang.NewModules()
+			if err := ms.Read(tc.module); err != nil {
+				log.Fatal(err)
 			}
-			got := Paths(e, Path{}, []*Path{})
+			if len(ms.Modules) == 0 {
+				log.Fatal("no modules found, exporting from submodules is not yet supported")
+			}
+			var mn string // module name
+			// at this moment ms contains only one module
+			// which was read by the path provided within -m flag
+			// this loop gets the name of this module instead of filename
+			for _, m := range ms.Modules {
+				mn = m.Name
+			}
+			errs := ms.Process()
+			for _, err := range errs {
+				log.Fatal(err)
+			}
+
+			e := yang.ToEntry(ms.Modules[mn])
+
+			var got []*Path
+			Paths(e, Path{}, &got)
 
 			for i, v := range tc.want {
 				if v.Module != got[i].Module {
