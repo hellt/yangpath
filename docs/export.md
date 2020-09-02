@@ -114,7 +114,7 @@ It is possible to display only state or configuration nodes by using `--only-nod
 * `config`: only configuration nodes are displayed
 
 #### Module name
-Although module name is likely known to a user, its possible to display the module name along each path by using `--with-modules yes` flag.
+Although module name is likely known to a user, its possible to display the module name along each path by using `--with-module yes` flag.
 
 #### Format
 By default `yangpath` outputs the paths in text format to stdout, but it can also generate an HTML output which opens the door to some pretty cool usecases which we discuss on the [Path Browser](html-template.md) page.
