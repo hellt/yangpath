@@ -39,10 +39,10 @@ var exportCmd = &cobra.Command{
 
 		ms := yang.NewModules()
 		if err := ms.Read(viper.GetString("module")); err != nil {
-			log.Fatal(err)
+			log.Info(err)
 		}
 		if len(ms.Modules) == 0 {
-			log.Fatal("no modules found, exporting from submodules is not yet supported")
+			log.Fatal("no YANG modules found by the path specified.")
 		}
 		var mn string // module name
 		// at this moment ms contains only one module
