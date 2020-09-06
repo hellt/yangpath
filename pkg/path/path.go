@@ -118,7 +118,7 @@ func Paths(e *yang.Entry, p Path, ps *[]*Path, termcolor bool) {
 
 		// if the immediate type is identityref
 		if e.Node.(*yang.Leaf).Type.IdentityBase != nil {
-			p.SType += typeColor.Sprint("->%v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
+			p.SType += typeColor.Sprintf("->%v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
 		}
 
 		//handling leafref
