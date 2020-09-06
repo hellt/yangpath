@@ -45,12 +45,20 @@ var exportCmd = &cobra.Command{
 			log.Fatal("no YANG modules found by the path specified.")
 		}
 		var mn string // module name
-		// at this moment ms contains only one module
+		// at this moment ms.Modules map contains either a single module
 		// which was read by the path provided within -m flag
-		// this loop gets the name of this module instead of filename
-		for _, m := range ms.Modules {
+		// or several modules if the modules with revision were found (see https://github.com/openconfig/goyang/issues/137)
+		// this loop gets the name of the module
+		// and removing the modules with revisions, since the bare module refers to the same module
+		for k, m := range ms.Modules {
+			if strings.Contains(k, "@") {
+				delete(ms.Modules, k) // removing module with a revision
+				continue
+			}
 			mn = m.Name
 		}
+		// fmt.Println(ms.Modules)
+		// os.Exit(0)
 		errs := ms.Process()
 		for _, err := range errs {
 			log.Fatal(err)
@@ -59,7 +67,7 @@ var exportCmd = &cobra.Command{
 		e := yang.ToEntry(ms.Modules[mn])
 
 		var paths []*path.Path
-		path.Paths(e, path.Path{}, &paths)
+		path.Paths(e, path.Path{}, &paths, !viper.GetBool("path-no-color"))
 
 		// outputting paths in text format
 		if viper.GetString("path-format") == "text" {
@@ -152,4 +160,7 @@ func init() {
 
 	exportCmd.Flags().StringSliceP("template-vars", "", []string{}, "extra template variables in case a custom template is used. Key value pairs separated with ::: delimiter")
 	viper.BindPFlag("path-template-vars", exportCmd.Flags().Lookup("template-vars"))
+
+	exportCmd.Flags().BoolP("no-color", "", false, "disable colored terminal output")
+	viper.BindPFlag("path-no-color", exportCmd.Flags().Lookup("no-color"))
 }

@@ -60,7 +60,7 @@ sudo curl -sL https://github.com/hellt/yangpath/raw/master/install.sh | sudo bas
 Alternatively, leverage the system [packages](install.md#package-managers) or [docker images](install.md#docker).
 
 #### Export paths
-To [export](export.md) the paths from a given module[^1]:
+To [export](export.md) the paths from a given YANG module[^1]:
 ```bash
 # assuming cur working dir is the root of openconfig repo
 yangpath export -m release/models/interfaces/openconfig-interfaces.yang

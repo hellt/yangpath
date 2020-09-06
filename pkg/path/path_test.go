@@ -175,7 +175,7 @@ func TestPaths(t *testing.T) {
 			e := yang.ToEntry(ms.Modules[mn])
 
 			var got []*Path
-			Paths(e, Path{}, &got)
+			Paths(e, Path{}, &got, false)
 
 			for i, v := range tc.want {
 				if v.Module != got[i].Module {

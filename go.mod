@@ -3,6 +3,7 @@ module github.com/hellt/yangpath
 go 1.13
 
 require (
+	github.com/fatih/color v1.7.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/openconfig/gnmi v0.0.0-20200617225440-d2b4e6a45802 // indirect
 	github.com/openconfig/goyang v0.0.0-20200803193518-78bac27bdff1

@@ -23,6 +23,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/openconfig/goyang/pkg/yang"
 	"github.com/spf13/viper"
 )
@@ -70,9 +71,15 @@ var defTemplate = `
 `
 
 // Paths recursively traverses the entry's e directory Dir till the leaf node
-// populating Path structure along the way
-// returns a list of pointers to the Path
-func Paths(e *yang.Entry, p Path, ps *[]*Path) {
+// populating p Path structure along the way
+// on the last leaf element p is added to ps
+func Paths(e *yang.Entry, p Path, ps *[]*Path, termcolor bool) {
+	keyColor := color.New(color.Bold)
+	typeColor := color.New(color.Faint)
+	color.NoColor = false
+	if !termcolor {
+		color.NoColor = true
+	}
 	switch e.Node.(type) {
 	case *yang.Module: // a module has no parent
 		p.Module = e.Name
@@ -90,9 +97,9 @@ func Paths(e *yang.Entry, p Path, ps *[]*Path) {
 		if e.Key != "" {          // for key-less lists skip the keyElem creation
 			keys := strings.Split(e.Key, " ")
 			for _, k := range keys {
-				xKElem += fmt.Sprintf("[%s=*]", k)
+				xKElem += keyColor.Sprintf("[%s=*]", k)
 			}
-			rKElem = strings.Join(keys, ",") // catenating restconf keys delimited by comma
+			rKElem = keyColor.Sprintf("%s", strings.Join(keys, ",")) // catenating restconf keys delimited by comma
 		}
 		p.XPath += fmt.Sprintf("/%s%s", e.Name, xKElem)
 		p.RestConfPath += fmt.Sprintf("/%s=%s", e.Name, rKElem)
@@ -107,21 +114,21 @@ func Paths(e *yang.Entry, p Path, ps *[]*Path) {
 		p.XPath += fmt.Sprintf("/%s", e.Name)
 		p.RestConfPath += fmt.Sprintf("/%s", e.Name)
 		p.Type = e.Node.(*yang.Leaf).Type
-		p.SType = e.Node.(*yang.Leaf).Type.Name
+		p.SType = typeColor.Sprint(e.Node.(*yang.Leaf).Type.Name)
 
 		// if the immediate type is identityref
 		if e.Node.(*yang.Leaf).Type.IdentityBase != nil {
-			p.SType += fmt.Sprintf("->%v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
+			p.SType += typeColor.Sprint("->%v", e.Node.(*yang.Leaf).Type.IdentityBase.Name)
 		}
 
 		//handling leafref
 		if e.Type.Kind == yang.Yleafref {
-			p.SType += fmt.Sprintf("->%v", e.Type.Path)
+			p.SType += typeColor.Sprintf("->%v", e.Type.Path)
 		}
 
 		//handling enumeration types
 		if e.Type.Kind == yang.Yenum {
-			p.SType += fmt.Sprintf("%+q", e.Type.Enum.Names())
+			p.SType += typeColor.Sprintf("%+q", e.Type.Enum.Names())
 		}
 
 		//handling union types
@@ -136,9 +143,8 @@ func Paths(e *yang.Entry, p Path, ps *[]*Path) {
 				default:
 					u = append(u, ut.Name)
 				}
-
 			}
-			p.SType += fmt.Sprintf("{%v}", strings.Join(u, " "))
+			p.SType += typeColor.Sprintf("{%v}", strings.Join(u, " "))
 		}
 		*ps = append(*ps, &p)
 	}
@@ -151,7 +157,7 @@ func Paths(e *yang.Entry, p Path, ps *[]*Path) {
 	}
 	sort.Strings(ne)
 	for _, k := range ne {
-		Paths(e.Dir[k], p, ps)
+		Paths(e.Dir[k], p, ps, termcolor)
 	}
 }
 

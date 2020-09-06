@@ -67,7 +67,7 @@ yangpath export --module release/models/interfaces/openconfig-interfaces.yang
     If these imported modules are not in the same directory where the target module is, a user needs to provide a path (or paths) to the directories with these imported modules.
 
 ## Default behavior
-With just the above mentioned flags set, the exported paths will be printed to `stdout` in the following _default_ form:
+With just the above mentioned flags set, the exported paths will be printed to `stdout` with keys and types fields highlighted:
 
 ```text
 ❯ yangpath export --module release/models/interfaces/openconfig-interfaces.yang
@@ -105,6 +105,17 @@ Node state, which is enabled by default and shows if the leaf is a configurable 
 * `no`: types are not displayed
 * `yes`: only type names are displayed
 * `detailed` (default): both type names and enclosed values are displayed as explained [here](about-paths.md#types).
+
+#### Color highlighting
+Path keys are of [prime importance](about-paths.md#keys-in-paths) in `yangpath` export output.  
+To articulate the keys in the schema path we made them highlighted with the ANSI colors. At the same time, the type information is rendered _faded_ so that each element can stay visually separated even if the path is quite long.
+
+=== "light theme"
+    ![color_light](https://gitlab.com/rdodin/pics/-/wikis/uploads/1a3cf2312b852c392501750955df5d16/image.png)
+=== "dark theme"
+    ![color_dark](https://gitlab.com/rdodin/pics/-/wikis/uploads/8b2ba4041c507a0606a3d88676712266/image.png)
+
+If colors are not up to your liking, you can always turn them off by adding a flag `--no-color`.
 
 #### Node filter
 It is possible to display only state or configuration nodes by using `--only-nodes` flag that takes one of these values:
