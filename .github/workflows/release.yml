@@ -33,6 +33,9 @@ jobs:
       - name: Login to dockerhub
         run: docker login -u hellt -p ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Login to github container registry
+        run: docker login -u hellt -p ${{ secrets.GHCR_TOKEN }}
+
       - name: Release with goreleaser
         uses: goreleaser/goreleaser-action@v1
         with:
