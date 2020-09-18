@@ -53,8 +53,8 @@ nfpms:
     replacements:
       amd64: x86_64
       386: i386
-      darwin: darwin
-      linux: linux
+      darwin: Darwin
+      linux: Linux
     vendor: yangpath
     homepage: https://yangpath.netdevops.me
     maintainer: Roman Dodin <dodin.roman@gmail.com>
