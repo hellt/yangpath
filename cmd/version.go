@@ -29,7 +29,7 @@ var (
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "show yangpath version",
+	Short: "show yangpath version or upgrade",
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("version : %s\n", version)
